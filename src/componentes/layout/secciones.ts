@@ -29,7 +29,7 @@ export interface SeccionMenu {
  */
 export const SECCIONES: SeccionMenu[] = [
   { ruta: '/panel', etiqueta: 'Panel', icono: LayoutDashboard, disponible: true },
-  { ruta: '/clientes', etiqueta: 'Clientes', icono: Users, disponible: false },
+  { ruta: '/clientes', etiqueta: 'Clientes', icono: Users, disponible: true },
   { ruta: '/estrategia', etiqueta: 'Estrategia de marca', icono: Target, disponible: true },
   { ruta: '/calendario', etiqueta: 'Calendario', icono: CalendarDays, disponible: true },
   { ruta: '/ia', etiqueta: 'Centro de IA', icono: Sparkles, disponible: false },
@@ -39,5 +39,5 @@ export const SECCIONES: SeccionMenu[] = [
   { ruta: '/aprobaciones', etiqueta: 'Aprobaciones', icono: CheckCircle2, disponible: false },
   { ruta: '/archivos', etiqueta: 'Archivos', icono: FolderOpen, disponible: false },
   { ruta: '/metricas', etiqueta: 'Métricas', icono: BarChart3, disponible: false },
-  { ruta: '/equipo', etiqueta: 'Equipo', icono: UserCog, disponible: false },
+  { ruta: '/equipo', etiqueta: 'Equipo', icono: UserCog, disponible: true },
 ];

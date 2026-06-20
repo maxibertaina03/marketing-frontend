@@ -3,6 +3,9 @@ import { AreaPrivada } from '@/componentes/AreaPrivada';
 import { PaginaLogin } from '@/funcionalidades/auth/PaginaLogin';
 import { PaginaRegistro } from '@/funcionalidades/auth/PaginaRegistro';
 import { PaginaPanel } from '@/funcionalidades/panel/PaginaPanel';
+import { PaginaClientes } from '@/funcionalidades/clientes/PaginaClientes';
+import { FichaCliente } from '@/funcionalidades/clientes/FichaCliente';
+import { PaginaEquipo } from '@/funcionalidades/equipo/PaginaEquipo';
 import { PaginaProximamente } from '@/funcionalidades/comun/PaginaProximamente';
 
 export const router = createBrowserRouter([
@@ -14,7 +17,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/panel" replace /> },
       { path: 'panel', element: <PaginaPanel /> },
-      { path: 'clientes', element: <PaginaProximamente titulo="Clientes" /> },
+      { path: 'clientes', element: <PaginaClientes /> },
+      { path: 'clientes/:id', element: <FichaCliente /> },
       { path: 'estrategia', element: <PaginaProximamente titulo="Estrategia de marca" /> },
       { path: 'calendario', element: <PaginaProximamente titulo="Calendario" /> },
       { path: 'ia', element: <PaginaProximamente titulo="Centro de IA" /> },
@@ -24,7 +28,7 @@ export const router = createBrowserRouter([
       { path: 'aprobaciones', element: <PaginaProximamente titulo="Aprobaciones" /> },
       { path: 'archivos', element: <PaginaProximamente titulo="Archivos" /> },
       { path: 'metricas', element: <PaginaProximamente titulo="Métricas" /> },
-      { path: 'equipo', element: <PaginaProximamente titulo="Equipo" /> },
+      { path: 'equipo', element: <PaginaEquipo /> },
     ],
   },
   { path: '*', element: <Navigate to="/panel" replace /> },

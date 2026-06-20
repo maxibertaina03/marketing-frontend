@@ -30,8 +30,8 @@ export interface SeccionMenu {
 export const SECCIONES: SeccionMenu[] = [
   { ruta: '/panel', etiqueta: 'Panel', icono: LayoutDashboard, disponible: true },
   { ruta: '/clientes', etiqueta: 'Clientes', icono: Users, disponible: true },
-  { ruta: '/estrategia', etiqueta: 'Estrategia de marca', icono: Target, disponible: false },
-  { ruta: '/calendario', etiqueta: 'Calendario', icono: CalendarDays, disponible: false },
+  { ruta: '/estrategia', etiqueta: 'Estrategia de marca', icono: Target, disponible: true },
+  { ruta: '/calendario', etiqueta: 'Calendario', icono: CalendarDays, disponible: true },
   { ruta: '/ia', etiqueta: 'Centro de IA', icono: Sparkles, disponible: false },
   { ruta: '/ideas', etiqueta: 'Banco de ideas', icono: Lightbulb, disponible: false },
   { ruta: '/biblioteca-copys', etiqueta: 'Biblioteca de copys', icono: FileText, disponible: false },

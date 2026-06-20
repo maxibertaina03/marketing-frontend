@@ -6,6 +6,8 @@ import { PaginaPanel } from '@/funcionalidades/panel/PaginaPanel';
 import { PaginaClientes } from '@/funcionalidades/clientes/PaginaClientes';
 import { FichaCliente } from '@/funcionalidades/clientes/FichaCliente';
 import { PaginaEquipo } from '@/funcionalidades/equipo/PaginaEquipo';
+import { PaginaEstrategia } from '@/funcionalidades/estrategia-marca/PaginaEstrategia';
+import { PaginaCalendario } from '@/funcionalidades/calendario/PaginaCalendario';
 import { PaginaProximamente } from '@/funcionalidades/comun/PaginaProximamente';
 
 export const router = createBrowserRouter([
@@ -19,8 +21,8 @@ export const router = createBrowserRouter([
       { path: 'panel', element: <PaginaPanel /> },
       { path: 'clientes', element: <PaginaClientes /> },
       { path: 'clientes/:id', element: <FichaCliente /> },
-      { path: 'estrategia', element: <PaginaProximamente titulo="Estrategia de marca" /> },
-      { path: 'calendario', element: <PaginaProximamente titulo="Calendario" /> },
+      { path: 'estrategia', element: <PaginaEstrategia /> },
+      { path: 'calendario', element: <PaginaCalendario /> },
       { path: 'ia', element: <PaginaProximamente titulo="Centro de IA" /> },
       { path: 'ideas', element: <PaginaProximamente titulo="Banco de ideas" /> },
       { path: 'biblioteca-copys', element: <PaginaProximamente titulo="Biblioteca de copys" /> },

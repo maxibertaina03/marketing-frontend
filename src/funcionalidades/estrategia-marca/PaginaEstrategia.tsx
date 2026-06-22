@@ -9,6 +9,7 @@ import {
 } from '@/componentes/ui/tarjeta';
 import { Boton } from '@/componentes/ui/boton';
 import { FormularioEstrategia } from './FormularioEstrategia';
+import { SelectorCliente } from './SelectorCliente';
 import {
   useEstrategias,
   useCrearEstrategia,
@@ -38,15 +39,21 @@ export function PaginaEstrategia() {
   const [vista, setVista] = useState<Vista>('lista');
   const [seleccionada, setSeleccionada] = useState<EstrategiaDeMarca | null>(null);
 
-  // clienteId temporal: en Fase 1 lo pedimos con un input simple hasta que masita entregue el módulo clientes
+  // Cliente elegido para la nueva estrategia (id para enviar, nombre para mostrar).
   const [clienteIdInput, setClienteIdInput] = useState('');
+  const [clienteNombre, setClienteNombre] = useState('');
   const [clienteConfirmado, setClienteConfirmado] = useState(false);
 
   const actualizarMutation = useActualizarEstrategia(seleccionada?.id ?? '');
 
   function handleCrear(payload: CrearEstrategiaPayload) {
     crearMutation.mutate(payload, {
-      onSuccess: () => { setVista('lista'); setClienteConfirmado(false); setClienteIdInput(''); },
+      onSuccess: () => {
+        setVista('lista');
+        setClienteConfirmado(false);
+        setClienteIdInput('');
+        setClienteNombre('');
+      },
     });
   }
 
@@ -63,32 +70,28 @@ export function PaginaEstrategia() {
 
   if (isLoading) return <p className="text-slate-500">Cargando estrategias…</p>;
 
-  // Vista nueva (paso 1: pedir clienteId)
+  // Vista nueva (paso 1: elegir el cliente con buscador)
   if (vista === 'nueva' && !clienteConfirmado) {
     return (
       <div className="max-w-md space-y-4">
         <h1 className="text-2xl font-bold">Nueva estrategia de marca</h1>
         <p className="text-slate-500 text-sm">
-          Ingresá el ID del cliente al que pertenece esta estrategia.
-          Una vez que masita entregue el módulo de clientes, esto será un selector.
+          Elegí el cliente al que pertenece esta estrategia.
         </p>
-        <div className="space-y-3">
-          <input
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-marca"
-            value={clienteIdInput}
-            onChange={(e) => setClienteIdInput(e.target.value)}
-            placeholder="ID del cliente"
-          />
-          <div className="flex gap-3">
-            <Boton variante="contorno" onClick={() => setVista('lista')}>Volver</Boton>
-            <Boton
-              onClick={() => setClienteConfirmado(true)}
-              disabled={!clienteIdInput.trim()}
-            >
-              Continuar
-            </Boton>
-          </div>
-        </div>
+        <Tarjeta>
+          <TarjetaContenido>
+            <SelectorCliente
+              onSeleccionar={(c) => {
+                setClienteIdInput(c.id);
+                setClienteNombre(c.nombre);
+                setClienteConfirmado(true);
+              }}
+            />
+          </TarjetaContenido>
+        </Tarjeta>
+        <Boton variante="contorno" onClick={() => setVista('lista')}>
+          Volver
+        </Boton>
       </div>
     );
   }
@@ -99,7 +102,16 @@ export function PaginaEstrategia() {
       <div className="max-w-2xl space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Nueva estrategia de marca</h1>
-          <p className="text-slate-500">Definí la identidad de comunicación de la marca.</p>
+          <p className="text-slate-500">
+            Cliente: <strong>{clienteNombre}</strong>{' '}
+            <button
+              type="button"
+              className="text-marca hover:underline"
+              onClick={() => setClienteConfirmado(false)}
+            >
+              (cambiar)
+            </button>
+          </p>
         </div>
         <Tarjeta>
           <TarjetaContenido>
@@ -109,6 +121,11 @@ export function PaginaEstrategia() {
               onCancelar={() => { setVista('lista'); setClienteConfirmado(false); }}
               guardando={crearMutation.isPending}
             />
+            {crearMutation.isError && (
+              <p className="mt-3 text-sm text-red-600">
+                {crearMutation.error?.message || 'No se pudo guardar la estrategia.'}
+              </p>
+            )}
           </TarjetaContenido>
         </Tarjeta>
       </div>
@@ -132,6 +149,11 @@ export function PaginaEstrategia() {
               onCancelar={() => setVista('lista')}
               guardando={actualizarMutation.isPending}
             />
+            {actualizarMutation.isError && (
+              <p className="mt-3 text-sm text-red-600">
+                {actualizarMutation.error?.message || 'No se pudieron guardar los cambios.'}
+              </p>
+            )}
           </TarjetaContenido>
         </Tarjeta>
       </div>

@@ -10,6 +10,7 @@ import {
 import { CalendarioMensual } from './CalendarioMensual';
 import { CalendarioSemanal } from './CalendarioSemanal';
 import { FormularioPublicacion } from './FormularioPublicacion';
+import { SelectorClienteEstrategia, type EstrategiaElegida } from './SelectorClienteEstrategia';
 import {
   usePublicaciones,
   useCrearPublicacion,
@@ -43,9 +44,6 @@ const COLORES_ESTADO: Record<EstadoContenido, string> = {
 
 const ESTADOS_FLUJO: EstadoContenido[] = ['BORRADOR', 'EN_REVISION', 'APROBADO', 'PROGRAMADO', 'PUBLICADO', 'RECHAZADO'];
 
-// ID de estrategia temporal hasta que el selector de estrategias esté integrado
-const ESTRATEGIA_ID_PLACEHOLDER = '';
-
 export function PaginaCalendario() {
   const hoy = new Date();
   const [vistaCalendario, setVistaCalendario] = useState<VistaCalendario>('mensual');
@@ -58,7 +56,7 @@ export function PaginaCalendario() {
   const [publicacionSeleccionada, setPublicacionSeleccionada] = useState<Publicacion | null>(null);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [fechaClickeada, setFechaClickeada] = useState<string | undefined>();
-  const [estrategiaIdInput, setEstrategiaIdInput] = useState(ESTRATEGIA_ID_PLACEHOLDER);
+  const [estrategiaElegida, setEstrategiaElegida] = useState<EstrategiaElegida | null>(null);
 
   // Rango de fechas para el query
   const { desde, hasta } = useMemo(() => {
@@ -95,6 +93,7 @@ export function PaginaCalendario() {
   function handleClickDia(fecha: string) {
     setFechaClickeada(fecha);
     setPublicacionSeleccionada(null);
+    setEstrategiaElegida(null);
     setModoEdicion(false);
     setModalAbierto(true);
   }
@@ -107,7 +106,7 @@ export function PaginaCalendario() {
 
   function handleCrear(payload: CrearPublicacionPayload) {
     crearMutation.mutate(payload, {
-      onSuccess: () => { setModalAbierto(false); setFechaClickeada(undefined); },
+      onSuccess: () => { setModalAbierto(false); setFechaClickeada(undefined); setEstrategiaElegida(null); },
     });
   }
 
@@ -160,7 +159,7 @@ export function PaginaCalendario() {
             </div>
             <Boton
               tamano="md"
-              onClick={() => { setPublicacionSeleccionada(null); setFechaClickeada(undefined); setModoEdicion(false); setModalAbierto(true); }}
+              onClick={() => { setPublicacionSeleccionada(null); setFechaClickeada(undefined); setEstrategiaElegida(null); setModoEdicion(false); setModalAbierto(true); }}
             >
               <Plus className="size-4" /> Nueva publicación
             </Boton>
@@ -203,7 +202,7 @@ export function PaginaCalendario() {
                 </TarjetaTitulo>
                 <button
                   className="text-slate-400 hover:text-slate-600"
-                  onClick={() => { setModalAbierto(false); setModoEdicion(false); }}
+                  onClick={() => { setModalAbierto(false); setModoEdicion(false); setEstrategiaElegida(null); }}
                 >
                   <X className="size-5" />
                 </button>
@@ -213,34 +212,43 @@ export function PaginaCalendario() {
               {/* Formulario nueva o editar */}
               {(!publicacionSeleccionada || modoEdicion) && (
                 <>
-                  {!publicacionSeleccionada && (
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-slate-700 mb-1">
-                        ID de estrategia de marca
-                      </label>
-                      <input
-                        className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-marca"
-                        value={estrategiaIdInput}
-                        onChange={(e) => setEstrategiaIdInput(e.target.value)}
-                        placeholder="ID de estrategia"
-                      />
-                      <p className="text-xs text-slate-400 mt-1">
-                        Cuando masita entregue el módulo de estrategias, esto será un selector.
-                      </p>
-                    </div>
+                  {/* Alta: primero elegir cliente → estrategia */}
+                  {!publicacionSeleccionada && !estrategiaElegida && (
+                    <SelectorClienteEstrategia onSeleccionar={setEstrategiaElegida} />
                   )}
-                  {(publicacionSeleccionada || estrategiaIdInput) && (
-                    <FormularioPublicacion
-                      estrategiaId={publicacionSeleccionada?.estrategiaId ?? estrategiaIdInput}
-                      fechaInicial={fechaClickeada}
-                      inicial={publicacionSeleccionada ?? undefined}
-                      onGuardar={publicacionSeleccionada ? handleActualizar : handleCrear}
-                      onCancelar={() => {
-                        if (publicacionSeleccionada) setModoEdicion(false);
-                        else setModalAbierto(false);
-                      }}
-                      guardando={crearMutation.isPending || actualizarMutation.isPending}
-                    />
+                  {(publicacionSeleccionada || estrategiaElegida) && (
+                    <>
+                      {!publicacionSeleccionada && estrategiaElegida && (
+                        <p className="mb-3 text-sm text-slate-500">
+                          Estrategia: <strong>{estrategiaElegida.nombre}</strong> ·{' '}
+                          {estrategiaElegida.clienteNombre}{' '}
+                          <button
+                            type="button"
+                            className="text-marca hover:underline"
+                            onClick={() => setEstrategiaElegida(null)}
+                          >
+                            (cambiar)
+                          </button>
+                        </p>
+                      )}
+                      <FormularioPublicacion
+                        estrategiaId={publicacionSeleccionada?.estrategiaId ?? estrategiaElegida!.id}
+                        fechaInicial={fechaClickeada}
+                        inicial={publicacionSeleccionada ?? undefined}
+                        onGuardar={publicacionSeleccionada ? handleActualizar : handleCrear}
+                        onCancelar={() => {
+                          if (publicacionSeleccionada) setModoEdicion(false);
+                          else { setModalAbierto(false); setEstrategiaElegida(null); }
+                        }}
+                        guardando={crearMutation.isPending || actualizarMutation.isPending}
+                      />
+                      {(crearMutation.isError || actualizarMutation.isError) && (
+                        <p className="mt-3 text-sm text-red-600">
+                          {(crearMutation.error ?? actualizarMutation.error)?.message ||
+                            'No se pudo guardar la publicación.'}
+                        </p>
+                      )}
+                    </>
                   )}
                 </>
               )}

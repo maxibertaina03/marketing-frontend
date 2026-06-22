@@ -9,7 +9,7 @@ import {
 } from '@/componentes/ui/tarjeta';
 import { Boton } from '@/componentes/ui/boton';
 import { FormularioEstrategia } from './FormularioEstrategia';
-import { SelectorCliente } from './SelectorCliente';
+import { SelectorCliente } from '@/funcionalidades/clientes/SelectorCliente';
 import {
   useEstrategias,
   useCrearEstrategia,

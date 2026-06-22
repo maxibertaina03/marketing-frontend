@@ -4,6 +4,9 @@
   "description": "Frontend de ContentOS — plataforma de gestión para agencias de marketing",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

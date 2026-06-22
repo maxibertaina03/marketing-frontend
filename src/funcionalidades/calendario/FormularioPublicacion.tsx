@@ -20,7 +20,8 @@ const ESTADOS: { valor: EstadoContenido; etiqueta: string }[] = [
 ];
 
 interface Props {
-  estrategiaId: string;
+  clienteId: string;
+  estrategiaId?: string;
   fechaInicial?: string;
   inicial?: Partial<Publicacion>;
   onGuardar: (payload: CrearPublicacionPayload) => void;
@@ -33,7 +34,7 @@ function toInputDatetime(iso?: string | null) {
   return iso.slice(0, 16);
 }
 
-export function FormularioPublicacion({ estrategiaId, fechaInicial, inicial, onGuardar, onCancelar, guardando }: Props) {
+export function FormularioPublicacion({ clienteId, estrategiaId, fechaInicial, inicial, onGuardar, onCancelar, guardando }: Props) {
   const [titulo, setTitulo] = useState(inicial?.titulo ?? '');
   const [contenido, setContenido] = useState(inicial?.contenido ?? '');
   const [canal, setCanal] = useState<Canal>(inicial?.canal ?? 'INSTAGRAM');
@@ -47,6 +48,7 @@ export function FormularioPublicacion({ estrategiaId, fechaInicial, inicial, onG
     e.preventDefault();
     onGuardar({
       titulo,
+      clienteId,
       estrategiaId,
       contenido,
       canal,

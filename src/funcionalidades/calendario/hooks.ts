@@ -18,10 +18,9 @@ export type EstadoContenido =
   | 'PUBLICADO'
   | 'RECHAZADO';
 
-export interface EstrategiaResumen {
+export interface Resumen {
   id: string;
   nombre: string;
-  cliente: { id: string; nombre: string };
 }
 
 export interface Publicacion {
@@ -32,8 +31,10 @@ export interface Publicacion {
   canal: Canal;
   estado: EstadoContenido;
   fechaProgramada: string | null;
-  estrategiaId: string;
-  estrategia: EstrategiaResumen;
+  clienteId: string;
+  cliente: Resumen;
+  estrategiaId: string | null;
+  estrategia: Resumen | null;
   organizacionId: string;
   creadoEn: string;
   actualizadoEn: string;
@@ -41,7 +42,8 @@ export interface Publicacion {
 
 export interface CrearPublicacionPayload {
   titulo: string;
-  estrategiaId: string;
+  clienteId: string;
+  estrategiaId?: string;
   contenido: string;
   canal: Canal;
   estado?: EstadoContenido;
@@ -85,7 +87,7 @@ export function useActualizarPublicacion(id: string) {
   const api = useApi();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (payload: Partial<Omit<CrearPublicacionPayload, 'estrategiaId'>>) =>
+    mutationFn: (payload: Partial<CrearPublicacionPayload>) =>
       api.patch<Publicacion>(`/contenido/${id}`, payload),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['publicaciones'] }),
   });

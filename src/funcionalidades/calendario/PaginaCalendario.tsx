@@ -10,7 +10,7 @@ import {
 import { CalendarioMensual } from './CalendarioMensual';
 import { CalendarioSemanal } from './CalendarioSemanal';
 import { FormularioPublicacion } from './FormularioPublicacion';
-import { SelectorClienteEstrategia, type EstrategiaElegida } from './SelectorClienteEstrategia';
+import { SelectorClienteEstrategia, type SeleccionPublicacion } from './SelectorClienteEstrategia';
 import {
   usePublicaciones,
   useCrearPublicacion,
@@ -56,7 +56,7 @@ export function PaginaCalendario() {
   const [publicacionSeleccionada, setPublicacionSeleccionada] = useState<Publicacion | null>(null);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [fechaClickeada, setFechaClickeada] = useState<string | undefined>();
-  const [estrategiaElegida, setEstrategiaElegida] = useState<EstrategiaElegida | null>(null);
+  const [seleccion, setSeleccion] = useState<SeleccionPublicacion | null>(null);
 
   // Rango de fechas para el query
   const { desde, hasta } = useMemo(() => {
@@ -93,7 +93,7 @@ export function PaginaCalendario() {
   function handleClickDia(fecha: string) {
     setFechaClickeada(fecha);
     setPublicacionSeleccionada(null);
-    setEstrategiaElegida(null);
+    setSeleccion(null);
     setModoEdicion(false);
     setModalAbierto(true);
   }
@@ -106,11 +106,11 @@ export function PaginaCalendario() {
 
   function handleCrear(payload: CrearPublicacionPayload) {
     crearMutation.mutate(payload, {
-      onSuccess: () => { setModalAbierto(false); setFechaClickeada(undefined); setEstrategiaElegida(null); },
+      onSuccess: () => { setModalAbierto(false); setFechaClickeada(undefined); setSeleccion(null); },
     });
   }
 
-  function handleActualizar(payload: Partial<Omit<CrearPublicacionPayload, 'estrategiaId'>>) {
+  function handleActualizar(payload: CrearPublicacionPayload) {
     actualizarMutation.mutate(payload, {
       onSuccess: () => setModoEdicion(false),
     });
@@ -159,7 +159,7 @@ export function PaginaCalendario() {
             </div>
             <Boton
               tamano="md"
-              onClick={() => { setPublicacionSeleccionada(null); setFechaClickeada(undefined); setEstrategiaElegida(null); setModoEdicion(false); setModalAbierto(true); }}
+              onClick={() => { setPublicacionSeleccionada(null); setFechaClickeada(undefined); setSeleccion(null); setModoEdicion(false); setModalAbierto(true); }}
             >
               <Plus className="size-4" /> Nueva publicación
             </Boton>
@@ -202,7 +202,7 @@ export function PaginaCalendario() {
                 </TarjetaTitulo>
                 <button
                   className="text-slate-400 hover:text-slate-600"
-                  onClick={() => { setModalAbierto(false); setModoEdicion(false); setEstrategiaElegida(null); }}
+                  onClick={() => { setModalAbierto(false); setModoEdicion(false); setSeleccion(null); }}
                 >
                   <X className="size-5" />
                 </button>
@@ -213,32 +213,33 @@ export function PaginaCalendario() {
               {(!publicacionSeleccionada || modoEdicion) && (
                 <>
                   {/* Alta: primero elegir cliente → estrategia */}
-                  {!publicacionSeleccionada && !estrategiaElegida && (
-                    <SelectorClienteEstrategia onSeleccionar={setEstrategiaElegida} />
+                  {!publicacionSeleccionada && !seleccion && (
+                    <SelectorClienteEstrategia onSeleccionar={setSeleccion} />
                   )}
-                  {(publicacionSeleccionada || estrategiaElegida) && (
+                  {(publicacionSeleccionada || seleccion) && (
                     <>
-                      {!publicacionSeleccionada && estrategiaElegida && (
+                      {!publicacionSeleccionada && seleccion && (
                         <p className="mb-3 text-sm text-slate-500">
-                          Estrategia: <strong>{estrategiaElegida.nombre}</strong> ·{' '}
-                          {estrategiaElegida.clienteNombre}{' '}
+                          Cliente: <strong>{seleccion.clienteNombre}</strong> · Estrategia:{' '}
+                          {seleccion.estrategiaNombre ?? 'sin estrategia'}{' '}
                           <button
                             type="button"
                             className="text-marca hover:underline"
-                            onClick={() => setEstrategiaElegida(null)}
+                            onClick={() => setSeleccion(null)}
                           >
                             (cambiar)
                           </button>
                         </p>
                       )}
                       <FormularioPublicacion
-                        estrategiaId={publicacionSeleccionada?.estrategiaId ?? estrategiaElegida!.id}
+                        clienteId={publicacionSeleccionada?.clienteId ?? seleccion!.clienteId}
+                        estrategiaId={publicacionSeleccionada?.estrategiaId ?? seleccion?.estrategiaId}
                         fechaInicial={fechaClickeada}
                         inicial={publicacionSeleccionada ?? undefined}
                         onGuardar={publicacionSeleccionada ? handleActualizar : handleCrear}
                         onCancelar={() => {
                           if (publicacionSeleccionada) setModoEdicion(false);
-                          else { setModalAbierto(false); setEstrategiaElegida(null); }
+                          else { setModalAbierto(false); setSeleccion(null); }
                         }}
                         guardando={crearMutation.isPending || actualizarMutation.isPending}
                       />
@@ -294,9 +295,11 @@ export function PaginaCalendario() {
                   </div>
 
                   <div>
-                    <p className="text-xs font-medium text-slate-500 mb-1">Estrategia</p>
-                    <p className="text-sm text-slate-700">{publicacionSeleccionada.estrategia.nombre}</p>
-                    <p className="text-xs text-slate-400">{publicacionSeleccionada.estrategia.cliente.nombre}</p>
+                    <p className="text-xs font-medium text-slate-500 mb-1">Cliente</p>
+                    <p className="text-sm text-slate-700">{publicacionSeleccionada.cliente.nombre}</p>
+                    <p className="text-xs text-slate-400">
+                      Estrategia: {publicacionSeleccionada.estrategia?.nombre ?? 'sin estrategia'}
+                    </p>
                   </div>
 
                   <div className="flex gap-2 pt-2 border-t border-slate-100">

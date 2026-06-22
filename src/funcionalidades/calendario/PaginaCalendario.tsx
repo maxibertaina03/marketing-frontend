@@ -10,6 +10,7 @@ import {
 import { CalendarioMensual } from './CalendarioMensual';
 import { CalendarioSemanal } from './CalendarioSemanal';
 import { FormularioPublicacion } from './FormularioPublicacion';
+import { SelectorClienteEstrategia, type SeleccionPublicacion } from './SelectorClienteEstrategia';
 import {
   usePublicaciones,
   useCrearPublicacion,
@@ -43,9 +44,6 @@ const COLORES_ESTADO: Record<EstadoContenido, string> = {
 
 const ESTADOS_FLUJO: EstadoContenido[] = ['BORRADOR', 'EN_REVISION', 'APROBADO', 'PROGRAMADO', 'PUBLICADO', 'RECHAZADO'];
 
-// ID de estrategia temporal hasta que el selector de estrategias esté integrado
-const ESTRATEGIA_ID_PLACEHOLDER = '';
-
 export function PaginaCalendario() {
   const hoy = new Date();
   const [vistaCalendario, setVistaCalendario] = useState<VistaCalendario>('mensual');
@@ -58,7 +56,7 @@ export function PaginaCalendario() {
   const [publicacionSeleccionada, setPublicacionSeleccionada] = useState<Publicacion | null>(null);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [fechaClickeada, setFechaClickeada] = useState<string | undefined>();
-  const [estrategiaIdInput, setEstrategiaIdInput] = useState(ESTRATEGIA_ID_PLACEHOLDER);
+  const [seleccion, setSeleccion] = useState<SeleccionPublicacion | null>(null);
 
   // Rango de fechas para el query
   const { desde, hasta } = useMemo(() => {
@@ -95,6 +93,7 @@ export function PaginaCalendario() {
   function handleClickDia(fecha: string) {
     setFechaClickeada(fecha);
     setPublicacionSeleccionada(null);
+    setSeleccion(null);
     setModoEdicion(false);
     setModalAbierto(true);
   }
@@ -107,11 +106,11 @@ export function PaginaCalendario() {
 
   function handleCrear(payload: CrearPublicacionPayload) {
     crearMutation.mutate(payload, {
-      onSuccess: () => { setModalAbierto(false); setFechaClickeada(undefined); },
+      onSuccess: () => { setModalAbierto(false); setFechaClickeada(undefined); setSeleccion(null); },
     });
   }
 
-  function handleActualizar(payload: Partial<Omit<CrearPublicacionPayload, 'estrategiaId'>>) {
+  function handleActualizar(payload: CrearPublicacionPayload) {
     actualizarMutation.mutate(payload, {
       onSuccess: () => setModoEdicion(false),
     });
@@ -160,7 +159,7 @@ export function PaginaCalendario() {
             </div>
             <Boton
               tamano="md"
-              onClick={() => { setPublicacionSeleccionada(null); setFechaClickeada(undefined); setModoEdicion(false); setModalAbierto(true); }}
+              onClick={() => { setPublicacionSeleccionada(null); setFechaClickeada(undefined); setSeleccion(null); setModoEdicion(false); setModalAbierto(true); }}
             >
               <Plus className="size-4" /> Nueva publicación
             </Boton>
@@ -203,7 +202,7 @@ export function PaginaCalendario() {
                 </TarjetaTitulo>
                 <button
                   className="text-slate-400 hover:text-slate-600"
-                  onClick={() => { setModalAbierto(false); setModoEdicion(false); }}
+                  onClick={() => { setModalAbierto(false); setModoEdicion(false); setSeleccion(null); }}
                 >
                   <X className="size-5" />
                 </button>
@@ -213,34 +212,44 @@ export function PaginaCalendario() {
               {/* Formulario nueva o editar */}
               {(!publicacionSeleccionada || modoEdicion) && (
                 <>
-                  {!publicacionSeleccionada && (
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-slate-700 mb-1">
-                        ID de estrategia de marca
-                      </label>
-                      <input
-                        className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-marca"
-                        value={estrategiaIdInput}
-                        onChange={(e) => setEstrategiaIdInput(e.target.value)}
-                        placeholder="ID de estrategia"
-                      />
-                      <p className="text-xs text-slate-400 mt-1">
-                        Cuando masita entregue el módulo de estrategias, esto será un selector.
-                      </p>
-                    </div>
+                  {/* Alta: primero elegir cliente → estrategia */}
+                  {!publicacionSeleccionada && !seleccion && (
+                    <SelectorClienteEstrategia onSeleccionar={setSeleccion} />
                   )}
-                  {(publicacionSeleccionada || estrategiaIdInput) && (
-                    <FormularioPublicacion
-                      estrategiaId={publicacionSeleccionada?.estrategiaId ?? estrategiaIdInput}
-                      fechaInicial={fechaClickeada}
-                      inicial={publicacionSeleccionada ?? undefined}
-                      onGuardar={publicacionSeleccionada ? handleActualizar : handleCrear}
-                      onCancelar={() => {
-                        if (publicacionSeleccionada) setModoEdicion(false);
-                        else setModalAbierto(false);
-                      }}
-                      guardando={crearMutation.isPending || actualizarMutation.isPending}
-                    />
+                  {(publicacionSeleccionada || seleccion) && (
+                    <>
+                      {!publicacionSeleccionada && seleccion && (
+                        <p className="mb-3 text-sm text-slate-500">
+                          Cliente: <strong>{seleccion.clienteNombre}</strong> · Estrategia:{' '}
+                          {seleccion.estrategiaNombre ?? 'sin estrategia'}{' '}
+                          <button
+                            type="button"
+                            className="text-marca hover:underline"
+                            onClick={() => setSeleccion(null)}
+                          >
+                            (cambiar)
+                          </button>
+                        </p>
+                      )}
+                      <FormularioPublicacion
+                        clienteId={publicacionSeleccionada?.clienteId ?? seleccion!.clienteId}
+                        estrategiaId={publicacionSeleccionada?.estrategiaId ?? seleccion?.estrategiaId}
+                        fechaInicial={fechaClickeada}
+                        inicial={publicacionSeleccionada ?? undefined}
+                        onGuardar={publicacionSeleccionada ? handleActualizar : handleCrear}
+                        onCancelar={() => {
+                          if (publicacionSeleccionada) setModoEdicion(false);
+                          else { setModalAbierto(false); setSeleccion(null); }
+                        }}
+                        guardando={crearMutation.isPending || actualizarMutation.isPending}
+                      />
+                      {(crearMutation.isError || actualizarMutation.isError) && (
+                        <p className="mt-3 text-sm text-red-600">
+                          {(crearMutation.error ?? actualizarMutation.error)?.message ||
+                            'No se pudo guardar la publicación.'}
+                        </p>
+                      )}
+                    </>
                   )}
                 </>
               )}
@@ -286,9 +295,11 @@ export function PaginaCalendario() {
                   </div>
 
                   <div>
-                    <p className="text-xs font-medium text-slate-500 mb-1">Estrategia</p>
-                    <p className="text-sm text-slate-700">{publicacionSeleccionada.estrategia.nombre}</p>
-                    <p className="text-xs text-slate-400">{publicacionSeleccionada.estrategia.cliente.nombre}</p>
+                    <p className="text-xs font-medium text-slate-500 mb-1">Cliente</p>
+                    <p className="text-sm text-slate-700">{publicacionSeleccionada.cliente.nombre}</p>
+                    <p className="text-xs text-slate-400">
+                      Estrategia: {publicacionSeleccionada.estrategia?.nombre ?? 'sin estrategia'}
+                    </p>
                   </div>
 
                   <div className="flex gap-2 pt-2 border-t border-slate-100">

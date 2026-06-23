@@ -45,9 +45,11 @@ export function OrganizacionProvider({ children }: { children: ReactNode }) {
     setOrganizacionId(id);
   }
 
-  // Si no hay organización elegida y el usuario tiene al menos una, elegir la primera.
+  // Si no hay org elegida, o la que hay en localStorage ya no existe → elegir la primera válida.
   useEffect(() => {
-    if (!organizacionId && organizaciones.length > 0) {
+    if (organizaciones.length === 0) return;
+    const ids = organizaciones.map((o) => o.organizacionId);
+    if (!organizacionId || !ids.includes(organizacionId)) {
       seleccionar(organizaciones[0].organizacionId);
     }
   }, [organizaciones, organizacionId]);

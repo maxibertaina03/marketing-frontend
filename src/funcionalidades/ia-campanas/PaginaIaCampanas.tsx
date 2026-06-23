@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Megaphone, Sparkles, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
 import { Boton } from '@/componentes/ui/boton';
 import {

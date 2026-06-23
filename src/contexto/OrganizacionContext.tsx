@@ -22,11 +22,15 @@ export function OrganizacionProvider({ children }: { children: ReactNode }) {
   const idRef = useRef(organizacionId);
   idRef.current = organizacionId;
 
+  // El backend gratuito se duerme; mostramos un aviso mientras despierta.
+  const [despertando, setDespertando] = useState(false);
+
   const api = useMemo(
     () =>
       crearClienteApi({
         obtenerToken: () => getToken(),
         obtenerOrganizacionId: () => idRef.current,
+        onDespertando: setDespertando,
       }),
     [getToken],
   );
@@ -56,5 +60,16 @@ export function OrganizacionProvider({ children }: { children: ReactNode }) {
     cargando: isLoading,
   };
 
-  return <ContextoOrganizacion.Provider value={valor}>{children}</ContextoOrganizacion.Provider>;
+  return (
+    <ContextoOrganizacion.Provider value={valor}>
+      {despertando && (
+        <div className="fixed inset-x-0 top-0 z-50 flex items-center justify-center gap-2 bg-amber-500 px-4 py-2 text-center text-sm font-medium text-white shadow">
+          <span className="size-3 animate-ping rounded-full bg-white/80" />
+          Despertando el servidor… puede tardar ~50&nbsp;s (el plan gratuito se suspende por
+          inactividad).
+        </div>
+      )}
+      {children}
+    </ContextoOrganizacion.Provider>
+  );
 }

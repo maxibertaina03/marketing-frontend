@@ -9,6 +9,9 @@ import { PaginaEquipo } from '@/funcionalidades/equipo/PaginaEquipo';
 import { PaginaEstrategia } from '@/funcionalidades/estrategia-marca/PaginaEstrategia';
 import { PaginaCalendario } from '@/funcionalidades/calendario/PaginaCalendario';
 import { PaginaProximamente } from '@/funcionalidades/comun/PaginaProximamente';
+import { PaginaIaEstrategia } from '@/funcionalidades/ia-estrategia/PaginaIaEstrategia';
+import { PaginaBancoIdeas } from '@/funcionalidades/banco-ideas/PaginaBancoIdeas';
+import { PaginaIaCampanas } from '@/funcionalidades/ia-campanas/PaginaIaCampanas';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <PaginaLogin /> },
@@ -23,10 +26,10 @@ export const router = createBrowserRouter([
       { path: 'clientes/:id', element: <FichaCliente /> },
       { path: 'estrategia', element: <PaginaEstrategia /> },
       { path: 'calendario', element: <PaginaCalendario /> },
-      { path: 'ia', element: <PaginaProximamente titulo="Centro de IA" /> },
-      { path: 'ideas', element: <PaginaProximamente titulo="Banco de ideas" /> },
+      { path: 'ia', element: <PaginaIaEstrategia /> },
+      { path: 'ideas', element: <PaginaBancoIdeas /> },
       { path: 'biblioteca-copys', element: <PaginaProximamente titulo="Biblioteca de copys" /> },
-      { path: 'campanias', element: <PaginaProximamente titulo="Campañas" /> },
+      { path: 'campanias', element: <PaginaIaCampanas /> },
       { path: 'aprobaciones', element: <PaginaProximamente titulo="Aprobaciones" /> },
       { path: 'archivos', element: <PaginaProximamente titulo="Archivos" /> },
       { path: 'metricas', element: <PaginaProximamente titulo="Métricas" /> },

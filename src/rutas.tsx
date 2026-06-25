@@ -17,6 +17,8 @@ import { PaginaArchivos } from '@/funcionalidades/archivos/PaginaArchivos';
 import { PaginaAprobaciones } from '@/funcionalidades/aprobaciones/PaginaAprobaciones';
 import { PaginaPortalCliente } from '@/funcionalidades/portal-cliente/PaginaPortalCliente';
 import { PaginaDashboard } from '@/funcionalidades/dashboard/PaginaDashboard';
+import { PaginaIaMetricas } from '@/funcionalidades/ia-metricas/PaginaIaMetricas';
+import { PaginaInformes } from '@/funcionalidades/informes/PaginaInformes';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <PaginaLogin /> },
@@ -40,6 +42,8 @@ export const router = createBrowserRouter([
       { path: 'portal-cliente', element: <PaginaPortalCliente /> },
       { path: 'archivos', element: <PaginaArchivos /> },
       { path: 'metricas', element: <PaginaDashboard /> },
+      { path: 'ia-metricas', element: <PaginaIaMetricas /> },
+      { path: 'informes', element: <PaginaInformes /> },
       { path: 'equipo', element: <PaginaEquipo /> },
     ],
   },

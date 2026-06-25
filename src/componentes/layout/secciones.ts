@@ -13,6 +13,7 @@ import {
   ClipboardList,
   UserCog,
   Store,
+  BrainCircuit,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -43,5 +44,7 @@ export const SECCIONES: SeccionMenu[] = [
   { ruta: '/archivos', etiqueta: 'Archivos', icono: FolderOpen, disponible: true },
   { ruta: '/portal-cliente', etiqueta: 'Portal del cliente', icono: Store, disponible: true },
   { ruta: '/metricas', etiqueta: 'Métricas', icono: BarChart3, disponible: true },
+  { ruta: '/ia-metricas', etiqueta: 'IA de Métricas', icono: BrainCircuit, disponible: true },
+  { ruta: '/informes', etiqueta: 'Informes', icono: FileText, disponible: true },
   { ruta: '/equipo', etiqueta: 'Equipo', icono: UserCog, disponible: true },
 ];

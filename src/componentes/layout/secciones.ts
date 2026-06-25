@@ -37,7 +37,7 @@ export const SECCIONES: SeccionMenu[] = [
   { ruta: '/calendario', etiqueta: 'Calendario', icono: CalendarDays, disponible: true },
   { ruta: '/ia', etiqueta: 'Centro de IA', icono: Sparkles, disponible: true },
   { ruta: '/ideas', etiqueta: 'Banco de ideas', icono: Lightbulb, disponible: true },
-  { ruta: '/biblioteca-copys', etiqueta: 'Biblioteca de copys', icono: FileText, disponible: false },
+  { ruta: '/biblioteca-copys', etiqueta: 'Biblioteca de copys', icono: FileText, disponible: true },
   { ruta: '/campanias', etiqueta: 'Campañas', icono: Megaphone, disponible: true },
   { ruta: '/produccion', etiqueta: 'Producción', icono: ClipboardList, disponible: true },
   { ruta: '/aprobaciones', etiqueta: 'Aprobaciones', icono: CheckCircle2, disponible: true },

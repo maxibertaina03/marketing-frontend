@@ -42,6 +42,6 @@ export const SECCIONES: SeccionMenu[] = [
   { ruta: '/aprobaciones', etiqueta: 'Aprobaciones', icono: CheckCircle2, disponible: true },
   { ruta: '/archivos', etiqueta: 'Archivos', icono: FolderOpen, disponible: true },
   { ruta: '/portal-cliente', etiqueta: 'Portal del cliente', icono: Store, disponible: true },
-  { ruta: '/metricas', etiqueta: 'Métricas', icono: BarChart3, disponible: false },
+  { ruta: '/metricas', etiqueta: 'Métricas', icono: BarChart3, disponible: true },
   { ruta: '/equipo', etiqueta: 'Equipo', icono: UserCog, disponible: true },
 ];

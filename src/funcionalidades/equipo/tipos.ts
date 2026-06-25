@@ -24,11 +24,15 @@ export interface Miembro {
   email: string;
   nombre: string | null;
   rol: Rol;
+  /** Solo para rol CLIENTE: la marca que representa. */
+  clienteId: string | null;
+  cliente: { id: string; nombre: string } | null;
 }
 
 export interface Invitacion {
   id: string;
   email: string;
   rol: Rol;
+  clienteId: string | null;
   creadoEn: string;
 }

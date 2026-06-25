@@ -10,7 +10,9 @@ import {
   BarChart3,
   CheckCircle2,
   FolderOpen,
+  ClipboardList,
   UserCog,
+  Store,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -36,8 +38,10 @@ export const SECCIONES: SeccionMenu[] = [
   { ruta: '/ideas', etiqueta: 'Banco de ideas', icono: Lightbulb, disponible: true },
   { ruta: '/biblioteca-copys', etiqueta: 'Biblioteca de copys', icono: FileText, disponible: false },
   { ruta: '/campanias', etiqueta: 'Campañas', icono: Megaphone, disponible: true },
-  { ruta: '/aprobaciones', etiqueta: 'Aprobaciones', icono: CheckCircle2, disponible: false },
-  { ruta: '/archivos', etiqueta: 'Archivos', icono: FolderOpen, disponible: false },
+  { ruta: '/produccion', etiqueta: 'Producción', icono: ClipboardList, disponible: true },
+  { ruta: '/aprobaciones', etiqueta: 'Aprobaciones', icono: CheckCircle2, disponible: true },
+  { ruta: '/archivos', etiqueta: 'Archivos', icono: FolderOpen, disponible: true },
+  { ruta: '/portal-cliente', etiqueta: 'Portal del cliente', icono: Store, disponible: true },
   { ruta: '/metricas', etiqueta: 'Métricas', icono: BarChart3, disponible: false },
   { ruta: '/equipo', etiqueta: 'Equipo', icono: UserCog, disponible: true },
 ];

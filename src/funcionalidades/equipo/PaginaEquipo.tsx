@@ -4,6 +4,7 @@ import { useApi, useOrganizacion } from '@/contexto/contexto-organizacion';
 import { Boton } from '@/componentes/ui/boton';
 import { Campo, Entrada, Selector } from '@/componentes/ui/campo';
 import { Tarjeta } from '@/componentes/ui/tarjeta';
+import { useClientes } from '@/funcionalidades/clientes/hooks';
 import { ETIQUETA_ROL, ROLES, type Invitacion, type Miembro, type Rol } from './tipos';
 
 /** Gestión del equipo: miembros, roles e invitaciones. Las acciones son solo para ADMIN. */
@@ -15,6 +16,10 @@ export function PaginaEquipo() {
 
   const [email, setEmail] = useState('');
   const [rolInvitado, setRolInvitado] = useState<Rol>('COMMUNITY_MANAGER');
+  const [clienteInvitado, setClienteInvitado] = useState('');
+
+  // Marcas de la org: necesarias para asignar a un miembro/invitado con rol CLIENTE.
+  const { data: clientes = [] } = useClientes();
 
   const { data: miembros = [] } = useQuery({
     queryKey: ['equipo-miembros', organizacionId],
@@ -33,16 +38,25 @@ export function PaginaEquipo() {
   }
 
   const invitar = useMutation({
-    mutationFn: () => api.post('/equipo/invitaciones', { email, rol: rolInvitado }),
+    mutationFn: () =>
+      api.post('/equipo/invitaciones', {
+        email,
+        rol: rolInvitado,
+        ...(rolInvitado === 'CLIENTE' ? { clienteId: clienteInvitado } : {}),
+      }),
     onSuccess: () => {
       setEmail('');
+      setClienteInvitado('');
       refrescar();
     },
   });
 
   const cambiarRol = useMutation({
-    mutationFn: (vars: { membresiaId: string; rol: Rol }) =>
-      api.patch(`/equipo/miembros/${vars.membresiaId}`, { rol: vars.rol }),
+    mutationFn: (vars: { membresiaId: string; rol: Rol; clienteId?: string }) =>
+      api.patch(`/equipo/miembros/${vars.membresiaId}`, {
+        rol: vars.rol,
+        ...(vars.clienteId ? { clienteId: vars.clienteId } : {}),
+      }),
     onSuccess: refrescar,
   });
 
@@ -58,7 +72,9 @@ export function PaginaEquipo() {
 
   function enviarInvitacion(e: FormEvent) {
     e.preventDefault();
-    if (email.trim()) invitar.mutate();
+    if (!email.trim()) return;
+    if (rolInvitado === 'CLIENTE' && !clienteInvitado) return;
+    invitar.mutate();
   }
 
   return (
@@ -95,6 +111,23 @@ export function PaginaEquipo() {
                 ))}
               </Selector>
             </Campo>
+            {rolInvitado === 'CLIENTE' && (
+              <Campo etiqueta="Marca que representa">
+                <Selector
+                  className="w-52"
+                  value={clienteInvitado}
+                  onChange={(e) => setClienteInvitado(e.target.value)}
+                  required
+                >
+                  <option value="">Elegí una marca…</option>
+                  {clientes.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nombre}
+                    </option>
+                  ))}
+                </Selector>
+              </Campo>
+            )}
             <Boton type="submit" disabled={invitar.isPending}>
               {invitar.isPending ? 'Invitando…' : 'Invitar'}
             </Boton>
@@ -132,21 +165,53 @@ export function PaginaEquipo() {
                 <td className="px-4 py-3 text-slate-600">{m.email}</td>
                 <td className="px-4 py-3">
                   {esAdmin ? (
-                    <Selector
-                      className="w-48"
-                      value={m.rol}
-                      onChange={(e) =>
-                        cambiarRol.mutate({ membresiaId: m.membresiaId, rol: e.target.value as Rol })
-                      }
-                    >
-                      {ROLES.map((r) => (
-                        <option key={r} value={r}>
-                          {ETIQUETA_ROL[r]}
-                        </option>
-                      ))}
-                    </Selector>
+                    <div className="flex flex-col gap-1">
+                      <Selector
+                        className="w-48"
+                        value={m.rol}
+                        onChange={(e) => {
+                          const rol = e.target.value as Rol;
+                          cambiarRol.mutate({
+                            membresiaId: m.membresiaId,
+                            rol,
+                            clienteId: rol === 'CLIENTE' ? (m.clienteId ?? clientes[0]?.id) : undefined,
+                          });
+                        }}
+                      >
+                        {ROLES.map((r) => (
+                          <option key={r} value={r}>
+                            {ETIQUETA_ROL[r]}
+                          </option>
+                        ))}
+                      </Selector>
+                      {m.rol === 'CLIENTE' && (
+                        <Selector
+                          className="w-48"
+                          value={m.clienteId ?? ''}
+                          onChange={(e) =>
+                            cambiarRol.mutate({
+                              membresiaId: m.membresiaId,
+                              rol: 'CLIENTE',
+                              clienteId: e.target.value,
+                            })
+                          }
+                        >
+                          <option value="">Elegí su marca…</option>
+                          {clientes.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.nombre}
+                            </option>
+                          ))}
+                        </Selector>
+                      )}
+                    </div>
                   ) : (
-                    ETIQUETA_ROL[m.rol]
+                    <span>
+                      {ETIQUETA_ROL[m.rol]}
+                      {m.rol === 'CLIENTE' && m.cliente && (
+                        <span className="text-slate-400"> · {m.cliente.nombre}</span>
+                      )}
+                    </span>
                   )}
                 </td>
                 {esAdmin && (

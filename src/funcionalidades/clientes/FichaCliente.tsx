@@ -4,6 +4,7 @@ import { useApi } from '@/contexto/contexto-organizacion';
 import { Boton } from '@/componentes/ui/boton';
 import { Tarjeta } from '@/componentes/ui/tarjeta';
 import { FormularioCliente } from './FormularioCliente';
+import { ConexionMeta } from './ConexionMeta';
 import { ETIQUETA_ESTADO, type Cliente, type DatosCliente } from './tipos';
 
 /** Ficha de un cliente: edición de todos sus datos y eliminación. */
@@ -88,6 +89,8 @@ export function FichaCliente() {
           <p className="mt-3 text-sm text-red-600">No se pudieron guardar los cambios.</p>
         )}
       </Tarjeta>
+
+      <ConexionMeta clienteId={id} />
     </div>
   );
 }

@@ -28,6 +28,7 @@ export interface Publicacion {
   titulo: string;
   contenido: string;
   imagenUrl: string | null;
+  metaMediaId: string | null;
   canal: Canal;
   estado: EstadoContenido;
   fechaProgramada: string | null;
@@ -38,6 +39,11 @@ export interface Publicacion {
   organizacionId: string;
   creadoEn: string;
   actualizadoEn: string;
+}
+
+export interface RespuestaPublicarMeta {
+  metaMediaId: string;
+  permalink: string;
 }
 
 export interface CrearPublicacionPayload {
@@ -108,6 +114,16 @@ export function useEliminarPublicacion() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api.delete<void>(`/contenido/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['publicaciones'] }),
+  });
+}
+
+export function usePublicarEnMeta() {
+  const api = useApi();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (publicacionId: string) =>
+      api.post<RespuestaPublicarMeta>('/meta/publicar', { publicacionId }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['publicaciones'] }),
   });
 }

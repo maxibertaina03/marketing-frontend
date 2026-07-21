@@ -4,6 +4,7 @@ import { Boton } from '@/componentes/ui/boton';
 import { Campo, Entrada, Selector } from '@/componentes/ui/campo';
 import { Tarjeta } from '@/componentes/ui/tarjeta';
 import { useClientes } from '@/funcionalidades/clientes/hooks';
+import { useClienteActivo } from '@/contexto/contexto-cliente-activo';
 import { usePermisos } from '@/permisos/usePermisos';
 import {
   useArchivos,
@@ -37,14 +38,17 @@ function formatearTamano(bytes: number | null): string | null {
 export function PaginaArchivos() {
   const { puedeEditar } = usePermisos();
   const gestiona = puedeEditar('archivos');
+  const { clienteActivoId } = useClienteActivo();
   const [clienteFiltro, setClienteFiltro] = useState('');
+  // La marca activa manda; si hay una, se oculta el filtro local de cliente.
+  const clienteEfectivo = clienteActivoId || clienteFiltro;
   const [creando, setCreando] = useState(false);
   const [form, setForm] = useState(FORM_INICIAL);
 
   const { data: clientes = [] } = useClientes();
   const { data: publicaciones = [] } = usePublicacionesParaArchivos();
   const { data: archivos = [], isLoading } = useArchivos(
-    clienteFiltro ? { clienteId: clienteFiltro } : {},
+    clienteEfectivo ? { clienteId: clienteEfectivo } : {},
   );
 
   const crear = useCrearArchivo();
@@ -57,7 +61,7 @@ export function PaginaArchivos() {
   );
 
   function abrirForm() {
-    setForm({ ...FORM_INICIAL, clienteId: clienteFiltro });
+    setForm({ ...FORM_INICIAL, clienteId: clienteEfectivo });
     setCreando(true);
   }
 
@@ -174,20 +178,22 @@ export function PaginaArchivos() {
       )}
 
       <div className="flex flex-wrap items-end gap-3">
-        <Campo etiqueta="Filtrar por cliente">
-          <Selector
-            className="w-72"
-            value={clienteFiltro}
-            onChange={(e) => setClienteFiltro(e.target.value)}
-          >
-            <option value="">Todos los clientes</option>
-            {clientes.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nombre}
-              </option>
-            ))}
-          </Selector>
-        </Campo>
+        {!clienteActivoId && (
+          <Campo etiqueta="Filtrar por cliente">
+            <Selector
+              className="w-72"
+              value={clienteFiltro}
+              onChange={(e) => setClienteFiltro(e.target.value)}
+            >
+              <option value="">Todos los clientes</option>
+              {clientes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nombre}
+                </option>
+              ))}
+            </Selector>
+          </Campo>
+        )}
       </div>
 
       {isLoading ? (

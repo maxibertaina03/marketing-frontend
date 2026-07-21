@@ -5,6 +5,7 @@ import { Boton } from '@/componentes/ui/boton';
 import { Campo, Selector } from '@/componentes/ui/campo';
 import { Tarjeta, TarjetaCabecera, TarjetaContenido } from '@/componentes/ui/tarjeta';
 import { useClientes } from '@/funcionalidades/clientes/hooks';
+import { useClienteActivo } from '@/contexto/contexto-cliente-activo';
 import {
   useBiblioteca,
   ETIQUETA_TIPO,
@@ -17,13 +18,16 @@ const LIMITE = 12;
 
 /** Biblioteca de Copys: historial de contenido generado con IA (Fase 2, slice masita). */
 export function PaginaBibliotecaCopys() {
+  const { clienteActivoId } = useClienteActivo();
   const [clienteId, setClienteId] = useState('');
+  // La marca activa manda; si hay una, se oculta el filtro local de cliente.
+  const clienteEfectivo = clienteActivoId || clienteId;
   const [tipo, setTipo] = useState('');
   const [pagina, setPagina] = useState(1);
 
   const { data: clientes = [] } = useClientes();
   const { data, isLoading } = useBiblioteca({
-    clienteId: clienteId || undefined,
+    clienteId: clienteEfectivo || undefined,
     tipoBoton: tipo || undefined,
     pagina,
     limite: LIMITE,
@@ -51,20 +55,22 @@ export function PaginaBibliotecaCopys() {
       </div>
 
       <div className="flex flex-wrap items-end gap-3">
-        <Campo etiqueta="Cliente">
-          <Selector
-            className="w-60"
-            value={clienteId}
-            onChange={(e) => cambiarFiltro(setClienteId, e.target.value)}
-          >
-            <option value="">Todas las marcas</option>
-            {clientes.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nombre}
-              </option>
-            ))}
-          </Selector>
-        </Campo>
+        {!clienteActivoId && (
+          <Campo etiqueta="Cliente">
+            <Selector
+              className="w-60"
+              value={clienteId}
+              onChange={(e) => cambiarFiltro(setClienteId, e.target.value)}
+            >
+              <option value="">Todas las marcas</option>
+              {clientes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nombre}
+                </option>
+              ))}
+            </Selector>
+          </Campo>
+        )}
         <Campo etiqueta="Tipo">
           <Selector
             className="w-48"

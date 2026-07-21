@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Boton } from '@/componentes/ui/boton';
 import { Campo, AreaTexto } from '@/componentes/ui/campo';
 import { usePermisos } from '@/permisos/usePermisos';
+import { useClienteActivo } from '@/contexto/contexto-cliente-activo';
 import {
   useAprobacionesPorEstado,
   useDetalleAprobacion,
@@ -229,8 +230,8 @@ function ColumnaKanban({
 // ── Página principal ──────────────────────────────────────────────────────────
 
 export function PaginaAprobaciones() {
+  const { clienteActivoId } = useClienteActivo();
   const [idDetalle, setIdDetalle] = useState<string | null>(null);
-  const [clienteId] = useState<string | undefined>(undefined);
 
   return (
     <div className="space-y-6">
@@ -247,7 +248,7 @@ export function PaginaAprobaciones() {
             key={estado}
             estado={estado}
             etiqueta={etiqueta}
-            clienteId={clienteId}
+            clienteId={clienteActivoId || undefined}
             onVerDetalle={setIdDetalle}
           />
         ))}

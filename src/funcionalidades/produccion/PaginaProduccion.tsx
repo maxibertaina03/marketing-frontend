@@ -4,6 +4,7 @@ import { Boton } from '@/componentes/ui/boton';
 import { Campo, Entrada, AreaTexto, Selector } from '@/componentes/ui/campo';
 import { Tarjeta } from '@/componentes/ui/tarjeta';
 import { useClientes } from '@/funcionalidades/clientes/hooks';
+import { useClienteActivo } from '@/contexto/contexto-cliente-activo';
 import { usePermisos } from '@/permisos/usePermisos';
 import { TarjetaTarea } from './TarjetaTarea';
 import {
@@ -37,13 +38,18 @@ const FORM_INICIAL = {
 export function PaginaProduccion() {
   const { puedeEditar } = usePermisos();
   const gestiona = puedeEditar('produccion');
+  const { clienteActivoId } = useClienteActivo();
   const [clienteFiltro, setClienteFiltro] = useState('');
   const [publicacionFiltro, setPublicacionFiltro] = useState('');
   const [creando, setCreando] = useState(false);
   const [form, setForm] = useState(FORM_INICIAL);
 
+  // La marca activa manda: si hay una elegida, se filtra por ella y se oculta el
+  // filtro local de cliente (para no duplicar el control).
+  const clienteEfectivo = clienteActivoId || clienteFiltro;
+
   const { data: tablero, isLoading } = useTablero({
-    ...(clienteFiltro ? { clienteId: clienteFiltro } : {}),
+    ...(clienteEfectivo ? { clienteId: clienteEfectivo } : {}),
     ...(publicacionFiltro ? { publicacionId: publicacionFiltro } : {}),
   });
   const { data: clientes = [] } = useClientes();
@@ -51,8 +57,8 @@ export function PaginaProduccion() {
   const { data: miembros = [] } = useMiembros();
 
   // Al filtrar por cliente, las publicaciones (del filtro y del alta) se acotan a esa marca.
-  const publicacionesVisibles = clienteFiltro
-    ? publicaciones.filter((p) => p.clienteId === clienteFiltro)
+  const publicacionesVisibles = clienteEfectivo
+    ? publicaciones.filter((p) => p.clienteId === clienteEfectivo)
     : publicaciones;
 
   function cambiarClienteFiltro(id: string) {
@@ -197,20 +203,22 @@ export function PaginaProduccion() {
       )}
 
       <div className="flex flex-wrap items-end gap-3">
-        <Campo etiqueta="Filtrar por cliente">
-          <Selector
-            className="w-64"
-            value={clienteFiltro}
-            onChange={(e) => cambiarClienteFiltro(e.target.value)}
-          >
-            <option value="">Todos los clientes</option>
-            {clientes.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nombre}
-              </option>
-            ))}
-          </Selector>
-        </Campo>
+        {!clienteActivoId && (
+          <Campo etiqueta="Filtrar por cliente">
+            <Selector
+              className="w-64"
+              value={clienteFiltro}
+              onChange={(e) => cambiarClienteFiltro(e.target.value)}
+            >
+              <option value="">Todos los clientes</option>
+              {clientes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nombre}
+                </option>
+              ))}
+            </Selector>
+          </Campo>
+        )}
         <Campo etiqueta="Filtrar por publicación">
           <Selector
             className="w-72"

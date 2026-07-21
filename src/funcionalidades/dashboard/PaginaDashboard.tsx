@@ -4,15 +4,19 @@ import { Boton } from '@/componentes/ui/boton';
 import { Campo, Selector } from '@/componentes/ui/campo';
 import { Tarjeta } from '@/componentes/ui/tarjeta';
 import { useClientes } from '@/funcionalidades/clientes/hooks';
+import { useClienteActivo } from '@/contexto/contexto-cliente-activo';
 import { useResumenMetricas, useSimularMetricas } from './hooks';
 
 const num = (n: number) => n.toLocaleString('es-AR');
 
 /** Dashboard de métricas por cliente (Fase 4). Datos de prueba hasta la ingesta de Meta. */
 export function PaginaDashboard() {
+  const { clienteActivoId } = useClienteActivo();
   const [clienteId, setClienteId] = useState('');
+  // La marca activa manda; si hay una, se oculta el selector local.
+  const clienteEfectivo = clienteActivoId || clienteId;
   const { data: clientes = [] } = useClientes();
-  const { data: resumen, isLoading } = useResumenMetricas(clienteId);
+  const { data: resumen, isLoading } = useResumenMetricas(clienteEfectivo);
   const simular = useSimularMetricas();
 
   const t = resumen?.totales;
@@ -26,10 +30,10 @@ export function PaginaDashboard() {
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <p className="text-slate-500">Métricas de rendimiento por marca.</p>
         </div>
-        {clienteId && (
+        {clienteEfectivo && (
           <Boton
             variante="contorno"
-            onClick={() => simular.mutate(clienteId)}
+            onClick={() => simular.mutate(clienteEfectivo)}
             disabled={simular.isPending}
           >
             {simular.isPending ? 'Generando…' : 'Generar datos de prueba'}
@@ -37,22 +41,24 @@ export function PaginaDashboard() {
         )}
       </div>
 
-      <Campo etiqueta="Cliente">
-        <Selector
-          className="w-72"
-          value={clienteId}
-          onChange={(e) => setClienteId(e.target.value)}
-        >
-          <option value="">Elegí una marca…</option>
-          {clientes.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.nombre}
-            </option>
-          ))}
-        </Selector>
-      </Campo>
+      {!clienteActivoId && (
+        <Campo etiqueta="Cliente">
+          <Selector
+            className="w-72"
+            value={clienteId}
+            onChange={(e) => setClienteId(e.target.value)}
+          >
+            <option value="">Elegí una marca…</option>
+            {clientes.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.nombre}
+              </option>
+            ))}
+          </Selector>
+        </Campo>
+      )}
 
-      {!clienteId ? (
+      {!clienteEfectivo ? (
         <p className="rounded-md border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">
           Elegí una marca para ver sus métricas.
         </p>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Boton } from '@/componentes/ui/boton';
 import { Campo, AreaTexto } from '@/componentes/ui/campo';
-import { usePuedeEditar } from '@/contexto/contexto-organizacion';
+import { usePermisos } from '@/permisos/usePermisos';
 import {
   useAprobacionesPorEstado,
   useDetalleAprobacion,
@@ -58,7 +58,7 @@ function ModalDetalle({ id, onCerrar }: { id: string; onCerrar: () => void }) {
   const { data: pub, isLoading } = useDetalleAprobacion(id);
   const aprobar = useAprobar();
   const rechazar = useRechazar();
-  const puedeEditar = usePuedeEditar();
+  const puedeEditar = usePermisos().puedeEditar('aprobaciones');
   const [motivo, setMotivo] = useState('');
   const [vista, setVista] = useState<'detalle' | 'rechazar'>('detalle');
 
@@ -143,7 +143,7 @@ function TarjetaKanban({
   onVerDetalle: (id: string) => void;
 }) {
   const enviar = useEnviarRevision();
-  const puedeEditar = usePuedeEditar();
+  const puedeEditar = usePermisos().puedeEditar('aprobaciones');
   const puedeEnviar = puedeEditar && (pub.estado === 'BORRADOR' || pub.estado === 'RECHAZADO');
 
   return (

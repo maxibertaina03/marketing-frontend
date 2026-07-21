@@ -55,6 +55,21 @@ export function useAprobacionesPendientes(filtros: { clienteId?: string; pagina?
   });
 }
 
+export function useAprobacionesPorEstado(
+  estado: EstadoContenido,
+  filtros: { clienteId?: string; limite?: number } = {},
+) {
+  const api = useApi();
+  const params = new URLSearchParams({ estado });
+  if (filtros.clienteId) params.set('clienteId', filtros.clienteId);
+  params.set('limite', String(filtros.limite ?? 50));
+
+  return useQuery({
+    queryKey: ['aprobaciones', estado, filtros],
+    queryFn: () => api.get<PaginaAprobaciones>(`/aprobaciones?${params.toString()}`),
+  });
+}
+
 export function useDetalleAprobacion(id: string | null) {
   const api = useApi();
   return useQuery({

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Megaphone, Sparkles, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
+import { Megaphone, Sparkles, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
 import { Boton } from '@/componentes/ui/boton';
 import {
   Tarjeta,
@@ -413,31 +413,77 @@ function VistaBiblioteca({ onVolver }: { onVolver: () => void }) {
 function TarjetaCampana({ generacion: g }: { generacion: GeneracionIa }) {
   const [expandido, setExpandido] = useState(false);
   const fecha = new Date(g.creadoEn).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
-  const salida = g.salida as SalidaCampana;
+  const s = g.salida as SalidaCampana;
 
   return (
     <Tarjeta>
       <TarjetaCabecera>
         <div className="flex items-center justify-between">
           <div>
-            <TarjetaTitulo>{(salida as SalidaCampana)?.nombre ?? 'Campaña'}</TarjetaTitulo>
+            <TarjetaTitulo>{s?.nombre ?? 'Campaña'}</TarjetaTitulo>
             <TarjetaDescripcion>{fecha} · {g.tokensEntrada + g.tokensSalida} tokens</TarjetaDescripcion>
           </div>
           <button
             type="button"
-            className="text-sm text-marca hover:underline"
+            className="flex items-center gap-1 text-sm text-marca hover:underline"
             onClick={() => setExpandido((v) => !v)}
           >
+            {expandido ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
             {expandido ? 'Ocultar' : 'Ver detalle'}
           </button>
         </div>
       </TarjetaCabecera>
-      {expandido && (
-        <TarjetaContenido>
-          <p className="text-sm text-slate-600 mb-3">{salida?.descripcion}</p>
-          <pre className="text-xs bg-slate-50 rounded-md p-3 overflow-auto max-h-64 whitespace-pre-wrap text-slate-700">
-            {JSON.stringify(salida, null, 2)}
-          </pre>
+      {expandido && s && (
+        <TarjetaContenido className="space-y-4">
+          {s.descripcion && <p className="text-sm text-slate-700">{s.descripcion}</p>}
+          {s.publico && <p className="text-xs text-slate-500">Público: {s.publico}</p>}
+
+          {s.fases?.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-slate-700">Fases</p>
+              {s.fases.map((f, i) => (
+                <div key={i} className="rounded-md bg-slate-50 px-3 py-2">
+                  <p className="text-xs font-medium text-slate-800">{f.nombre} · {f.duracionDias} días</p>
+                  <ul className="mt-1 space-y-0.5">
+                    {f.acciones.map((a, j) => (
+                      <li key={j} className="text-xs text-slate-600 flex gap-1.5"><span className="text-marca">•</span>{a}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-2">
+            {s.contenidosClave?.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-slate-700 mb-1">Contenidos clave</p>
+                <ul className="space-y-0.5">
+                  {s.contenidosClave.map((c, i) => (
+                    <li key={i} className="text-xs text-slate-600 flex gap-1.5"><span className="text-marca">•</span>{c}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {s.kpis?.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-slate-700 mb-1">KPIs</p>
+                <ul className="space-y-0.5">
+                  {s.kpis.map((k, i) => (
+                    <li key={i} className="text-xs text-slate-600 flex gap-1.5"><span className="text-marca">•</span>{k}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          {s.hashtags?.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {s.hashtags.map((h) => (
+                <span key={h} className="text-xs bg-marca/10 text-marca rounded-full px-2 py-0.5">{h}</span>
+              ))}
+            </div>
+          )}
         </TarjetaContenido>
       )}
     </Tarjeta>

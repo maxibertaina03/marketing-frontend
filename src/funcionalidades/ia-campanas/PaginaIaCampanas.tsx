@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Megaphone, Sparkles, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
 import { Boton } from '@/componentes/ui/boton';
+import { Selector } from '@/componentes/ui/campo';
+import { useClientes } from '@/funcionalidades/clientes/hooks';
 import {
   Tarjeta,
   TarjetaCabecera,
@@ -363,17 +365,31 @@ export function PaginaIaCampanas() {
 
 function VistaBiblioteca({ onVolver }: { onVolver: () => void }) {
   const [pagina, setPagina] = useState(1);
+  const [clienteId, setClienteId] = useState('');
   const limite = 10;
-  const { data, isLoading } = useBibliotecaCampanas({ pagina, limite });
+  const { data: clientes = [] } = useClientes();
+  const { data, isLoading } = useBibliotecaCampanas({ clienteId: clienteId || undefined, pagina, limite });
   const totalPaginas = data ? Math.ceil(data.total / limite) : 0;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <button onClick={onVolver} className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1">
-          <ChevronLeft className="size-4" /> Volver
-        </button>
-        <h1 className="text-xl font-bold">Biblioteca de Campañas</h1>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <button onClick={onVolver} className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1">
+            <ChevronLeft className="size-4" /> Volver
+          </button>
+          <h1 className="text-xl font-bold">Biblioteca de Campañas</h1>
+        </div>
+        <Selector
+          value={clienteId}
+          onChange={(e) => { setClienteId(e.target.value); setPagina(1); }}
+          className="w-48"
+        >
+          <option value="">Todos los clientes</option>
+          {clientes.map((c) => (
+            <option key={c.id} value={c.id}>{c.nombre}</option>
+          ))}
+        </Selector>
       </div>
 
       {isLoading ? (

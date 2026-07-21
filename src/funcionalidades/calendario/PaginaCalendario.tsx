@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { CalendarDays, LayoutGrid, Plus, X, Pencil, Trash2 } from 'lucide-react';
+import { CalendarDays, LayoutGrid, Plus, X, Pencil, Trash2, Send, ExternalLink, CheckCircle2 } from 'lucide-react';
 import { usePermisos } from '@/permisos/usePermisos';
 import { Boton } from '@/componentes/ui/boton';
 import {
@@ -18,6 +18,7 @@ import {
   useActualizarPublicacion,
   useEliminarPublicacion,
   useCambiarEstado,
+  usePublicarEnMeta,
   type Publicacion,
   type EstadoContenido,
   type CrearPublicacionPayload,
@@ -59,6 +60,7 @@ export function PaginaCalendario() {
   const [modoEdicion, setModoEdicion] = useState(false);
   const [fechaClickeada, setFechaClickeada] = useState<string | undefined>();
   const [seleccion, setSeleccion] = useState<SeleccionPublicacion | null>(null);
+  const [permalinkPublicado, setPermalinkPublicado] = useState<string | null>(null);
 
   // Rango de fechas para el query
   const { desde, hasta } = useMemo(() => {
@@ -82,6 +84,7 @@ export function PaginaCalendario() {
   const actualizarMutation = useActualizarPublicacion(publicacionSeleccionada?.id ?? '');
   const eliminarMutation = useEliminarPublicacion();
   const cambiarEstadoMutation = useCambiarEstado();
+  const publicarMetaMutation = usePublicarEnMeta();
 
   function avanzarMes() {
     if (mes === 11) { setMes(0); setAnio(a => a + 1); }
@@ -103,7 +106,15 @@ export function PaginaCalendario() {
   function handleClickPublicacion(p: Publicacion) {
     setPublicacionSeleccionada(p);
     setModoEdicion(false);
+    setPermalinkPublicado(null);
     setModalAbierto(true);
+  }
+
+  function handlePublicarEnMeta() {
+    if (!publicacionSeleccionada) return;
+    publicarMetaMutation.mutate(publicacionSeleccionada.id, {
+      onSuccess: (res) => setPermalinkPublicado(res.permalink),
+    });
   }
 
   function handleCrear(payload: CrearPublicacionPayload) {
@@ -206,7 +217,7 @@ export function PaginaCalendario() {
                 </TarjetaTitulo>
                 <button
                   className="text-slate-400 hover:text-slate-600"
-                  onClick={() => { setModalAbierto(false); setModoEdicion(false); setSeleccion(null); }}
+                  onClick={() => { setModalAbierto(false); setModoEdicion(false); setSeleccion(null); setPermalinkPublicado(null); }}
                 >
                   <X className="size-5" />
                 </button>
@@ -305,6 +316,53 @@ export function PaginaCalendario() {
                       Estrategia: {publicacionSeleccionada.estrategia?.nombre ?? 'sin estrategia'}
                     </p>
                   </div>
+
+                  {/* Publicar en Instagram */}
+                  {publicacionSeleccionada.canal === 'INSTAGRAM' &&
+                    (publicacionSeleccionada.estado === 'APROBADO' ||
+                      (publicacionSeleccionada.estado === 'PUBLICADO' && publicacionSeleccionada.metaMediaId)) && (
+                    <div className="pt-3 border-t border-slate-100 space-y-2">
+                      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Instagram</p>
+
+                      {publicacionSeleccionada.estado === 'PUBLICADO' && publicacionSeleccionada.metaMediaId ? (
+                        <p className="flex items-center gap-1.5 text-xs text-green-600">
+                          <CheckCircle2 className="size-3.5" /> Publicado en Instagram
+                        </p>
+                      ) : permalinkPublicado ? (
+                        <a
+                          href={permalinkPublicado}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 text-sm text-marca hover:underline"
+                        >
+                          <ExternalLink className="size-3.5" /> Ver en Instagram
+                        </a>
+                      ) : !publicacionSeleccionada.imagenUrl ? (
+                        <p className="text-xs text-amber-600">
+                          Instagram requiere una imagen. Editá la publicación para agregarla.
+                        </p>
+                      ) : puedeEditar('contenido') ? (
+                        <>
+                          <Boton
+                            variante="primario"
+                            tamano="sm"
+                            className="w-full"
+                            onClick={handlePublicarEnMeta}
+                            disabled={publicarMetaMutation.isPending}
+                          >
+                            <Send className="size-3.5" />
+                            {publicarMetaMutation.isPending ? 'Publicando…' : 'Publicar ahora'}
+                          </Boton>
+                          {publicarMetaMutation.isError && (
+                            <p className="text-xs text-red-600">
+                              {publicarMetaMutation.error?.message ||
+                                'No se pudo publicar. Verificá que la cuenta de Instagram esté conectada.'}
+                            </p>
+                          )}
+                        </>
+                      ) : null}
+                    </div>
+                  )}
 
                   {puedeEditar('contenido') && (
                     <div className="flex gap-2 pt-2 border-t border-slate-100">

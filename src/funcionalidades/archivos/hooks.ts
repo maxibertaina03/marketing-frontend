@@ -57,3 +57,47 @@ export function usePublicacionesParaArchivos() {
     queryFn: () => api.get<PublicacionParaArchivo[]>('/contenido'),
   });
 }
+
+/** Datos que devuelve el backend para subir directo a Cloudinary. */
+export interface FirmaSubida {
+  url: string;
+  cloudName: string;
+  apiKey: string;
+  timestamp: number;
+  folder: string;
+  signature: string;
+}
+
+/** Pide al backend la firma para subir un archivo de esa marca. */
+export function useFirmarSubida() {
+  const api = useApi();
+  return useMutation({
+    mutationFn: (clienteId: string) => api.post<FirmaSubida>('/archivos/firma', { clienteId }),
+  });
+}
+
+export interface ArchivoSubido {
+  url: string;
+  bytes: number;
+  recurso: string;
+}
+
+/**
+ * Sube el archivo directo a Cloudinary con la firma del backend (el binario no
+ * pasa por nuestro servidor).
+ */
+export async function subirACloudinary(archivo: File, firma: FirmaSubida): Promise<ArchivoSubido> {
+  const datos = new FormData();
+  datos.append('file', archivo);
+  datos.append('api_key', firma.apiKey);
+  datos.append('timestamp', String(firma.timestamp));
+  datos.append('folder', firma.folder);
+  datos.append('signature', firma.signature);
+
+  const respuesta = await fetch(firma.url, { method: 'POST', body: datos });
+  const json = await respuesta.json().catch(() => ({}));
+  if (!respuesta.ok) {
+    throw new Error(json?.error?.message ?? 'No se pudo subir el archivo a Cloudinary.');
+  }
+  return { url: json.secure_url, bytes: json.bytes ?? 0, recurso: json.resource_type ?? 'raw' };
+}

@@ -9,6 +9,8 @@ import { usePermisos } from '@/permisos/usePermisos';
 import {
   useArchivos,
   useCrearArchivo,
+  useFirmarSubida,
+  subirACloudinary,
   useEliminarArchivo,
   usePublicacionesParaArchivos,
 } from './hooks';
@@ -25,7 +27,16 @@ const FORM_INICIAL = {
   clienteId: '',
   tipo: 'OTRO' as TipoArchivo,
   publicacionId: '',
+  tamanoBytes: 0,
 };
+
+/** Traduce el tipo de recurso que devuelve Cloudinary a nuestro TipoArchivo. */
+function tipoDesdeRecurso(recurso: string, nombre: string): TipoArchivo {
+  if (recurso === 'image') return 'IMAGEN';
+  if (recurso === 'video') return /\.(mp3|wav|m4a|ogg)$/i.test(nombre) ? 'AUDIO' : 'VIDEO';
+  if (/\.(pdf|docx?|xlsx?|pptx?|txt)$/i.test(nombre)) return 'DOCUMENTO';
+  return 'OTRO';
+}
 
 function formatearTamano(bytes: number | null): string | null {
   if (!bytes) return null;
@@ -44,6 +55,8 @@ export function PaginaArchivos() {
   const clienteEfectivo = clienteActivoId || clienteFiltro;
   const [creando, setCreando] = useState(false);
   const [form, setForm] = useState(FORM_INICIAL);
+  const [subiendo, setSubiendo] = useState(false);
+  const [errorSubida, setErrorSubida] = useState('');
 
   const { data: clientes = [] } = useClientes();
   const { data: publicaciones = [] } = usePublicacionesParaArchivos();
@@ -52,6 +65,7 @@ export function PaginaArchivos() {
   );
 
   const crear = useCrearArchivo();
+  const firmar = useFirmarSubida();
   const eliminar = useEliminarArchivo();
 
   // Publicaciones del cliente elegido en el formulario (para asociar el archivo).
@@ -65,6 +79,33 @@ export function PaginaArchivos() {
     setCreando(true);
   }
 
+  async function alElegirArchivo(e: React.ChangeEvent<HTMLInputElement>) {
+    const archivo = e.target.files?.[0];
+    if (!archivo) return;
+    if (!form.clienteId) {
+      setErrorSubida('Elegí primero la marca dueña del archivo.');
+      return;
+    }
+    setSubiendo(true);
+    setErrorSubida('');
+    try {
+      const firma = await firmar.mutateAsync(form.clienteId);
+      const subido = await subirACloudinary(archivo, firma);
+      setForm((f) => ({
+        ...f,
+        url: subido.url,
+        nombre: f.nombre.trim() || archivo.name,
+        tamanoBytes: subido.bytes,
+        tipo: tipoDesdeRecurso(subido.recurso, archivo.name),
+      }));
+    } catch (err) {
+      setErrorSubida(err instanceof Error ? err.message : 'No se pudo subir el archivo.');
+    } finally {
+      setSubiendo(false);
+      e.target.value = '';
+    }
+  }
+
   function enviar(e: FormEvent) {
     e.preventDefault();
     if (!form.clienteId || !form.nombre.trim() || !form.url.trim()) return;
@@ -73,6 +114,7 @@ export function PaginaArchivos() {
       url: form.url.trim(),
       clienteId: form.clienteId,
       tipo: form.tipo,
+      ...(form.tamanoBytes ? { tamanoBytes: form.tamanoBytes } : {}),
       ...(form.publicacionId ? { publicacionId: form.publicacionId } : {}),
     };
     crear.mutate(payload, {
@@ -128,12 +170,28 @@ export function PaginaArchivos() {
                 required
               />
             </Campo>
-            <div className="sm:col-span-2">
+            <div className="sm:col-span-2 space-y-3">
+              <Campo etiqueta="Subir archivo (imagen, video o documento)">
+                <input
+                  type="file"
+                  onChange={alElegirArchivo}
+                  disabled={subiendo || !form.clienteId}
+                  className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-marca file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-marca-oscuro disabled:opacity-50"
+                />
+                <p className="mt-1 text-xs text-slate-400">
+                  {subiendo
+                    ? 'Subiendo…'
+                    : !form.clienteId
+                      ? 'Elegí primero la marca para habilitar la subida.'
+                      : 'Se sube directo a Cloudinary y completa la URL sola. También podés pegar una URL abajo.'}
+                </p>
+                {errorSubida && <p className="mt-1 text-sm text-red-600">{errorSubida}</p>}
+              </Campo>
               <Campo etiqueta="URL del archivo">
                 <Entrada
                   type="url"
                   value={form.url}
-                  onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, url: e.target.value, tamanoBytes: 0 }))}
                   placeholder="https://…"
                   required
                 />

@@ -11,15 +11,17 @@ import type {
   SalidaFoda,
   SalidaBuyerPersona,
   SalidaPilares,
+  SalidaOportunidades,
 } from '../ia-estrategia/hooks';
 
-type TipoFiltro = '' | 'ESTRATEGIA_MENSUAL' | 'FODA' | 'BUYER_PERSONA' | 'PILARES';
+type TipoFiltro = '' | 'ESTRATEGIA_MENSUAL' | 'FODA' | 'BUYER_PERSONA' | 'PILARES' | 'OPORTUNIDADES';
 
 const ETIQUETAS_TIPO: Record<string, string> = {
   ESTRATEGIA_MENSUAL: 'Estrategia mensual',
   FODA: 'Análisis FODA',
   BUYER_PERSONA: 'Buyer Persona',
   PILARES: 'Pilares de contenido',
+  OPORTUNIDADES: 'Oportunidades',
 };
 
 const COLORES_TIPO: Record<string, string> = {
@@ -27,6 +29,7 @@ const COLORES_TIPO: Record<string, string> = {
   FODA: 'bg-purple-100 text-purple-800',
   BUYER_PERSONA: 'bg-emerald-100 text-emerald-800',
   PILARES: 'bg-amber-100 text-amber-800',
+  OPORTUNIDADES: 'bg-rose-100 text-rose-800',
 };
 
 // ── Renders legibles por tipo ─────────────────────────────────────────────────
@@ -131,11 +134,37 @@ function RenderPilares({ salida }: { salida: SalidaPilares }) {
   );
 }
 
+function RenderOportunidades({ salida }: { salida: SalidaOportunidades }) {
+  const colorImpacto: Record<string, string> = {
+    ALTO: 'bg-rose-100 text-rose-700',
+    MEDIO: 'bg-amber-100 text-amber-700',
+    BAJO: 'bg-slate-100 text-slate-600',
+  };
+  return (
+    <div className="space-y-2 text-sm">
+      <p className="text-slate-600 leading-relaxed">{salida.resumen}</p>
+      {salida.oportunidades?.map((o, i) => (
+        <div key={i} className="rounded-md bg-slate-50 px-3 py-2 space-y-1">
+          <div className="flex items-center justify-between gap-2">
+            <p className="font-medium text-slate-800 text-xs">{o.titulo}</p>
+            <span className={`shrink-0 text-xs rounded-full px-1.5 py-0.5 font-medium ${colorImpacto[o.impacto] ?? ''}`}>
+              {o.impacto}
+            </span>
+          </div>
+          <p className="text-xs text-slate-600">{o.descripcion}</p>
+          <p className="text-xs text-marca font-medium">→ {o.accion}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function SalidaEstrategica({ tipo, salida }: { tipo: string; salida: unknown }) {
   if (tipo === 'ESTRATEGIA_MENSUAL') return <RenderEstrategiaMensual salida={salida as SalidaEstrategiaMensual} />;
   if (tipo === 'FODA') return <RenderFoda salida={salida as SalidaFoda} />;
   if (tipo === 'BUYER_PERSONA') return <RenderBuyerPersona salida={salida as SalidaBuyerPersona} />;
   if (tipo === 'PILARES') return <RenderPilares salida={salida as SalidaPilares} />;
+  if (tipo === 'OPORTUNIDADES') return <RenderOportunidades salida={salida as SalidaOportunidades} />;
   return (
     <pre className="text-xs bg-slate-50 rounded-md p-3 overflow-auto max-h-64 whitespace-pre-wrap text-slate-700">
       {JSON.stringify(salida, null, 2)}
@@ -229,7 +258,7 @@ export function PaginaBancoIdeas() {
         </Selector>
 
         <div className="flex flex-wrap gap-2">
-          {(['', 'ESTRATEGIA_MENSUAL', 'FODA', 'BUYER_PERSONA', 'PILARES'] as TipoFiltro[]).map((t) => (
+          {(['', 'OPORTUNIDADES', 'ESTRATEGIA_MENSUAL', 'FODA', 'BUYER_PERSONA', 'PILARES'] as TipoFiltro[]).map((t) => (
             <button
               key={t}
               className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${

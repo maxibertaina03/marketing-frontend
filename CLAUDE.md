@@ -61,10 +61,16 @@ Nunca commitees `.env` ni `node_modules` (ya están en `.gitignore`).
 ## Reparto del trabajo por fase
 
 - **masita**: Fase 1 pantallas de `clientes` + `equipo`; Fase 2 IA de Contenido + Biblioteca de
-  Copys; Fase 3 producción + archivos; Fase 4 dashboard por cliente + integraciones.
+  Copys; Fase 3 producción + archivos; Fase 4 dashboard por cliente + integraciones; Fase 5
+  producción+calendario (#3), archivos multimedia (#5), permisos ver/editar + Configuración (#6),
+  navegación por cliente infra (#8), auto-posteo (#7).
 - **capitan**: Fase 1 editor de `estrategia-marca` + `calendario` (mensual/semanal, estados de
   publicación); Fase 2 IA Estratégica + IA de Campañas + Banco de Ideas; Fase 3 aprobaciones +
-  portal del cliente; Fase 4 métricas + informes.
+  portal del cliente; Fase 4 métricas + informes; Fase 5 IA Oportunidades de Crecimiento (#1),
+  salidas de IA legibles (#2), aprobaciones kanban (#4), filtro por cliente (#8).
+
+Fases 1-4 completas y en producción. **Fase 5 = iteración post-testers**; el detalle está en
+`docs/PLAN.md`.
 
 Cada pantalla consume la API del backend según el contrato de Swagger. El plan completo lo tiene
 masita; pedíselo si necesitás el detalle.

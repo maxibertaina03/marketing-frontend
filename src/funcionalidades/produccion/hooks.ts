@@ -11,12 +11,14 @@ import type {
 
 /** Filtros opcionales del tablero / listado de tareas. */
 export interface FiltrosTareas {
+  clienteId?: string;
   publicacionId?: string;
   asignadoId?: string;
 }
 
 function query(filtros: FiltrosTareas): string {
   const params = new URLSearchParams();
+  if (filtros.clienteId) params.set('clienteId', filtros.clienteId);
   if (filtros.publicacionId) params.set('publicacionId', filtros.publicacionId);
   if (filtros.asignadoId) params.set('asignadoId', filtros.asignadoId);
   const qs = params.toString();

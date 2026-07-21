@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Lightbulb, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { Tarjeta, TarjetaCabecera, TarjetaTitulo, TarjetaDescripcion, TarjetaContenido } from '@/componentes/ui/tarjeta';
 import { Boton } from '@/componentes/ui/boton';
+import { Selector } from '@/componentes/ui/campo';
+import { useClientes } from '@/funcionalidades/clientes/hooks';
 import { useBancoIdeas, type GeneracionIa } from '../ia-estrategia/hooks';
 import type {
   SalidaEstrategiaMensual,
@@ -215,11 +217,14 @@ function TarjetaGeneracion({ generacion: g }: { generacion: GeneracionIa }) {
 
 export function PaginaBancoIdeas() {
   const [tipoFiltro, setTipoFiltro] = useState<TipoFiltro>('');
+  const [clienteId, setClienteId] = useState('');
   const [pagina, setPagina] = useState(1);
   const limite = 12;
 
+  const { data: clientes = [] } = useClientes();
   const { data, isLoading } = useBancoIdeas({
     tipoBoton: tipoFiltro || undefined,
+    clienteId: clienteId || undefined,
     pagina,
     limite,
   });
@@ -240,20 +245,33 @@ export function PaginaBancoIdeas() {
         </Link>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {(['', 'OPORTUNIDADES', 'ESTRATEGIA_MENSUAL', 'FODA', 'BUYER_PERSONA', 'PILARES'] as TipoFiltro[]).map((t) => (
-          <button
-            key={t}
-            className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${
-              tipoFiltro === t
-                ? 'bg-marca text-white border-marca'
-                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-            }`}
-            onClick={() => { setTipoFiltro(t); setPagina(1); }}
-          >
-            {t === '' ? 'Todos' : ETIQUETAS_TIPO[t]}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center gap-3">
+        <Selector
+          value={clienteId}
+          onChange={(e) => { setClienteId(e.target.value); setPagina(1); }}
+          className="w-48"
+        >
+          <option value="">Todos los clientes</option>
+          {clientes.map((c) => (
+            <option key={c.id} value={c.id}>{c.nombre}</option>
+          ))}
+        </Selector>
+
+        <div className="flex flex-wrap gap-2">
+          {(['', 'OPORTUNIDADES', 'ESTRATEGIA_MENSUAL', 'FODA', 'BUYER_PERSONA', 'PILARES'] as TipoFiltro[]).map((t) => (
+            <button
+              key={t}
+              className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${
+                tipoFiltro === t
+                  ? 'bg-marca text-white border-marca'
+                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+              }`}
+              onClick={() => { setTipoFiltro(t); setPagina(1); }}
+            >
+              {t === '' ? 'Todos' : ETIQUETAS_TIPO[t]}
+            </button>
+          ))}
+        </div>
       </div>
 
       {isLoading ? (

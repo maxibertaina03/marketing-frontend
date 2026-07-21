@@ -14,6 +14,7 @@ import {
   UserCog,
   Store,
   BrainCircuit,
+  Settings,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -62,6 +63,7 @@ export const SECCIONES: SeccionMenu[] = [
   { ruta: '/ia-metricas', etiqueta: 'IA de Métricas', icono: BrainCircuit, disponible: true, roles: ANALITICA },
   { ruta: '/informes', etiqueta: 'Informes', icono: FileText, disponible: true, roles: ANALITICA },
   { ruta: '/equipo', etiqueta: 'Equipo', icono: UserCog, disponible: true, roles: INTERNOS },
+  { ruta: '/configuracion', etiqueta: 'Configuración', icono: Settings, disponible: true, roles: GESTORES },
 ];
 
 /** Secciones visibles para un rol (vacío si el rol es desconocido). */

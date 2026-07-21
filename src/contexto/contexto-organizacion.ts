@@ -34,3 +34,5 @@ export function useApi(): ClienteApi {
   return useOrganizacion().api;
 }
 
+// El rol y los permisos viven en `@/permisos` (useRolActual / usePermisos), para
+// tener una sola matriz de permisos por área en todo el frontend.

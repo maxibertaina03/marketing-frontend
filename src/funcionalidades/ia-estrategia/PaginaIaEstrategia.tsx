@@ -9,6 +9,7 @@ import {
   TarjetaDescripcion,
   TarjetaContenido,
 } from '@/componentes/ui/tarjeta';
+import { usePermisos } from '@/permisos/usePermisos';
 import { SelectorClienteEstrategia, type SeleccionPublicacion } from '@/funcionalidades/calendario/SelectorClienteEstrategia';
 import {
   useGenerarEstrategiaMensual,
@@ -67,6 +68,7 @@ const BOTONES: { id: BotonIa; titulo: string; descripcion: string; icono: React.
 ];
 
 export function PaginaIaEstrategia() {
+  const { puedeEditar } = usePermisos();
   const [botonActivo, setBotonActivo] = useState<BotonIa | null>(null);
   const [seleccion, setSeleccion] = useState<SeleccionPublicacion | null>(null);
   const [cantidad, setCantidad] = useState(5);
@@ -248,14 +250,16 @@ export function PaginaIaEstrategia() {
                 </p>
               )}
 
-              <Boton
-                className="w-full"
-                onClick={handleGenerar}
-                disabled={pendiente}
-              >
-                <Sparkles className="size-4" />
-                {pendiente ? 'Generando…' : 'Generar con IA'}
-              </Boton>
+              {puedeEditar('ia') && (
+                <Boton
+                  className="w-full"
+                  onClick={handleGenerar}
+                  disabled={pendiente}
+                >
+                  <Sparkles className="size-4" />
+                  {pendiente ? 'Generando…' : 'Generar con IA'}
+                </Boton>
+              )}
             </TarjetaContenido>
           </Tarjeta>
         )}
@@ -281,11 +285,12 @@ export function PaginaIaEstrategia() {
       <div className="grid gap-4 sm:grid-cols-2">
         {BOTONES.map((b) => {
           const Icono = b.icono;
+          const puedeIa = puedeEditar('ia');
           return (
             <Tarjeta
               key={b.id}
-              className="cursor-pointer hover:border-marca/50 transition-colors group"
-              onClick={() => setBotonActivo(b.id)}
+              className={puedeIa ? 'cursor-pointer hover:border-marca/50 transition-colors group' : undefined}
+              onClick={puedeIa ? () => setBotonActivo(b.id) : undefined}
             >
               <TarjetaCabecera>
                 <div className="flex items-center gap-3">
@@ -303,11 +308,13 @@ export function PaginaIaEstrategia() {
                   </div>
                 </div>
               </TarjetaCabecera>
-              <TarjetaContenido>
-                <Boton variante="contorno" tamano="sm" className="w-full group-hover:bg-marca group-hover:text-white group-hover:border-marca transition-colors">
-                  <Sparkles className="size-3.5" /> Generar
-                </Boton>
-              </TarjetaContenido>
+              {puedeIa && (
+                <TarjetaContenido>
+                  <Boton variante="contorno" tamano="sm" className="w-full group-hover:bg-marca group-hover:text-white group-hover:border-marca transition-colors">
+                    <Sparkles className="size-3.5" /> Generar
+                  </Boton>
+                </TarjetaContenido>
+              )}
             </Tarjeta>
           );
         })}

@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { useOrganizacion } from '@/contexto/contexto-organizacion';
 import { seccionesParaRol, rolPuedeVerRuta, rutaInicialPorRol } from './secciones';
 import { SelectorOrganizacion } from './SelectorOrganizacion';
+import { SelectorClienteActivo } from './SelectorClienteActivo';
 
 /** Layout principal de la app autenticada: sidebar (filtrado por rol) + contenido. */
 export function Layout() {
@@ -44,6 +45,7 @@ export function Layout() {
             );
           })}
         </nav>
+        <SelectorClienteActivo />
       </aside>
 
       {/* Contenido */}

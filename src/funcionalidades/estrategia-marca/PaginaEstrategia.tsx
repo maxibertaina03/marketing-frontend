@@ -8,11 +8,10 @@ import {
   TarjetaContenido,
 } from '@/componentes/ui/tarjeta';
 import { Boton } from '@/componentes/ui/boton';
-import { Selector } from '@/componentes/ui/campo';
 import { usePermisos } from '@/permisos/usePermisos';
+import { useClienteActivo } from '@/contexto/contexto-cliente-activo';
 import { FormularioEstrategia } from './FormularioEstrategia';
 import { SelectorCliente } from '@/funcionalidades/clientes/SelectorCliente';
-import { useClientes } from '@/funcionalidades/clientes/hooks';
 import {
   useEstrategias,
   useCrearEstrategia,
@@ -36,9 +35,8 @@ type Vista = 'lista' | 'nueva' | 'editar' | 'detalle';
 
 export function PaginaEstrategia() {
   const { puedeEditar } = usePermisos();
-  const [clienteIdFiltro, setClienteIdFiltro] = useState('');
-  const { data: clientes = [] } = useClientes();
-  const { data: estrategias, isLoading } = useEstrategias(clienteIdFiltro || undefined);
+  const { clienteActivoId } = useClienteActivo();
+  const { data: estrategias, isLoading } = useEstrategias(clienteActivoId || undefined);
   const crearMutation = useCrearEstrategia();
   const eliminarMutation = useEliminarEstrategia();
 
@@ -265,17 +263,6 @@ export function PaginaEstrategia() {
           </Boton>
         )}
       </div>
-
-      <Selector
-        value={clienteIdFiltro}
-        onChange={(e) => setClienteIdFiltro(e.target.value)}
-        className="w-56"
-      >
-        <option value="">Todos los clientes</option>
-        {clientes.map((c) => (
-          <option key={c.id} value={c.id}>{c.nombre}</option>
-        ))}
-      </Selector>
 
       {!estrategias || estrategias.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 py-16 text-center">

@@ -8,6 +8,8 @@ import {
   TarjetaContenido,
 } from '@/componentes/ui/tarjeta';
 import { Boton } from '@/componentes/ui/boton';
+import { usePermisos } from '@/permisos/usePermisos';
+import { useClienteActivo } from '@/contexto/contexto-cliente-activo';
 import { FormularioEstrategia } from './FormularioEstrategia';
 import { SelectorCliente } from '@/funcionalidades/clientes/SelectorCliente';
 import {
@@ -32,7 +34,9 @@ const ETIQUETAS_TONO: Record<string, string> = {
 type Vista = 'lista' | 'nueva' | 'editar' | 'detalle';
 
 export function PaginaEstrategia() {
-  const { data: estrategias, isLoading } = useEstrategias();
+  const { puedeEditar } = usePermisos();
+  const { clienteActivoId } = useClienteActivo();
+  const { data: estrategias, isLoading } = useEstrategias(clienteActivoId || undefined);
   const crearMutation = useCrearEstrategia();
   const eliminarMutation = useEliminarEstrategia();
 
@@ -175,12 +179,14 @@ export function PaginaEstrategia() {
             <h1 className="text-2xl font-bold">{seleccionada.nombre}</h1>
             <p className="text-slate-500">Cliente: {seleccionada.cliente.nombre}</p>
           </div>
-          <Boton
-            variante="contorno"
-            onClick={() => setVista('editar')}
-          >
-            <Pencil className="size-4" /> Editar
-          </Boton>
+          {puedeEditar('estrategia') && (
+            <Boton
+              variante="contorno"
+              onClick={() => setVista('editar')}
+            >
+              <Pencil className="size-4" /> Editar
+            </Boton>
+          )}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -251,9 +257,11 @@ export function PaginaEstrategia() {
           <h1 className="text-2xl font-bold">Estrategia de marca</h1>
           <p className="text-slate-500">Definí el tono, objetivo y pilares de comunicación de cada cliente.</p>
         </div>
-        <Boton onClick={() => setVista('nueva')}>
-          <Plus className="size-4" /> Nueva estrategia
-        </Boton>
+        {puedeEditar('estrategia') && (
+          <Boton onClick={() => setVista('nueva')}>
+            <Plus className="size-4" /> Nueva estrategia
+          </Boton>
+        )}
       </div>
 
       {!estrategias || estrategias.length === 0 ? (
@@ -263,9 +271,11 @@ export function PaginaEstrategia() {
           <p className="text-sm text-slate-500 mt-1">
             Creá la primera estrategia de marca para empezar a planificar contenido.
           </p>
-          <Boton className="mt-4" onClick={() => setVista('nueva')}>
-            <Plus className="size-4" /> Nueva estrategia
-          </Boton>
+          {puedeEditar('estrategia') && (
+            <Boton className="mt-4" onClick={() => setVista('nueva')}>
+              <Plus className="size-4" /> Nueva estrategia
+            </Boton>
+          )}
         </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -304,23 +314,25 @@ export function PaginaEstrategia() {
                   >
                     Ver detalle <ChevronRight className="size-3" />
                   </Boton>
-                  <div className="flex gap-1">
-                    <Boton
-                      variante="fantasma"
-                      tamano="sm"
-                      onClick={() => { setSeleccionada(e); setVista('editar'); }}
-                    >
-                      <Pencil className="size-3.5" />
-                    </Boton>
-                    <Boton
-                      variante="fantasma"
-                      tamano="sm"
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                      onClick={() => handleEliminar(e.id)}
-                    >
-                      <Trash2 className="size-3.5" />
-                    </Boton>
-                  </div>
+                  {puedeEditar('estrategia') && (
+                    <div className="flex gap-1">
+                      <Boton
+                        variante="fantasma"
+                        tamano="sm"
+                        onClick={() => { setSeleccionada(e); setVista('editar'); }}
+                      >
+                        <Pencil className="size-3.5" />
+                      </Boton>
+                      <Boton
+                        variante="fantasma"
+                        tamano="sm"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => handleEliminar(e.id)}
+                      >
+                        <Trash2 className="size-3.5" />
+                      </Boton>
+                    </div>
+                  )}
                 </div>
               </TarjetaContenido>
             </Tarjeta>

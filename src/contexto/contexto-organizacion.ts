@@ -34,15 +34,5 @@ export function useApi(): ClienteApi {
   return useOrganizacion().api;
 }
 
-/** Devuelve el rol del usuario en la organización activa, o null si aún no resuelve. */
-export function useRolActual(): string | null {
-  const { organizaciones, organizacionId } = useOrganizacion();
-  const org = organizaciones.find((o) => o.organizacionId === organizacionId);
-  return org?.rol ?? null;
-}
-
-/** true si el usuario puede editar (ADMIN o COMMUNITY_MANAGER). */
-export function usePuedeEditar(): boolean {
-  const rol = useRolActual();
-  return rol === 'ADMIN' || rol === 'COMMUNITY_MANAGER';
-}
+// El rol y los permisos viven en `@/permisos` (useRolActual / usePermisos), para
+// tener una sola matriz de permisos por área en todo el frontend.

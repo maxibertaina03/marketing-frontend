@@ -4,6 +4,7 @@ import { Boton } from '@/componentes/ui/boton';
 import { Campo, Entrada, Selector } from '@/componentes/ui/campo';
 import { Tarjeta } from '@/componentes/ui/tarjeta';
 import { useClientes } from '@/funcionalidades/clientes/hooks';
+import { usePermisos } from '@/permisos/usePermisos';
 import {
   useArchivos,
   useCrearArchivo,
@@ -34,6 +35,8 @@ function formatearTamano(bytes: number | null): string | null {
 
 /** Gestión de archivos de las marcas (MVP: metadata + URL). */
 export function PaginaArchivos() {
+  const { puedeEditar } = usePermisos();
+  const gestiona = puedeEditar('archivos');
   const [clienteFiltro, setClienteFiltro] = useState('');
   const [creando, setCreando] = useState(false);
   const [form, setForm] = useState(FORM_INICIAL);
@@ -83,15 +86,17 @@ export function PaginaArchivos() {
           <h1 className="text-2xl font-bold">Archivos</h1>
           <p className="text-slate-500">Diseños, imágenes y documentos de tus marcas.</p>
         </div>
-        <Boton
-          onClick={() => (creando ? setCreando(false) : abrirForm())}
-          variante={creando ? 'secundario' : 'primario'}
-        >
-          {creando ? 'Cancelar' : 'Registrar archivo'}
-        </Boton>
+        {gestiona && (
+          <Boton
+            onClick={() => (creando ? setCreando(false) : abrirForm())}
+            variante={creando ? 'secundario' : 'primario'}
+          >
+            {creando ? 'Cancelar' : 'Registrar archivo'}
+          </Boton>
+        )}
       </div>
 
-      {creando && (
+      {creando && gestiona && (
         <Tarjeta className="p-6">
           <h2 className="mb-4 text-lg font-semibold">Registrar archivo</h2>
           <form className="grid gap-4 sm:grid-cols-2" onSubmit={enviar}>
@@ -201,15 +206,17 @@ export function PaginaArchivos() {
                   <p className="truncate text-sm font-medium text-slate-900" title={archivo.nombre}>
                     {archivo.nombre}
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => eliminar.mutate(archivo.id)}
-                    disabled={eliminar.isPending}
-                    className="text-slate-400 transition-colors hover:text-red-600 disabled:opacity-50"
-                    aria-label="Eliminar archivo"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  {gestiona && (
+                    <button
+                      type="button"
+                      onClick={() => eliminar.mutate(archivo.id)}
+                      disabled={eliminar.isPending}
+                      className="text-slate-400 transition-colors hover:text-red-600 disabled:opacity-50"
+                      aria-label="Eliminar archivo"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 text-xs">
                   <span

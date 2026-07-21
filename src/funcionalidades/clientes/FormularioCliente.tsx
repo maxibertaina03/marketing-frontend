@@ -8,10 +8,18 @@ interface Props {
   guardando: boolean;
   textoBoton: string;
   onGuardar: (datos: DatosCliente) => void;
+  /** Si es true, los campos quedan deshabilitados y se oculta el botón de guardar. */
+  soloLectura?: boolean;
 }
 
 /** Formulario con todos los campos del cliente. Se usa para crear y para editar. */
-export function FormularioCliente({ inicial, guardando, textoBoton, onGuardar }: Props) {
+export function FormularioCliente({
+  inicial,
+  guardando,
+  textoBoton,
+  onGuardar,
+  soloLectura = false,
+}: Props) {
   const [valores, setValores] = useState({
     nombre: inicial?.nombre ?? '',
     rubro: inicial?.rubro ?? '',
@@ -73,6 +81,7 @@ export function FormularioCliente({ inicial, guardando, textoBoton, onGuardar }:
 
   return (
     <form className="space-y-6" onSubmit={enviar}>
+      <fieldset disabled={soloLectura} className="space-y-6 disabled:opacity-70">
       <section className="grid gap-4 sm:grid-cols-2">
         <Campo etiqueta="Nombre de la marca *">
           <Entrada
@@ -214,10 +223,13 @@ export function FormularioCliente({ inicial, guardando, textoBoton, onGuardar }:
           />
         </Campo>
       </section>
+      </fieldset>
 
-      <Boton type="submit" disabled={guardando}>
-        {guardando ? 'Guardando…' : textoBoton}
-      </Boton>
+      {!soloLectura && (
+        <Boton type="submit" disabled={guardando}>
+          {guardando ? 'Guardando…' : textoBoton}
+        </Boton>
+      )}
     </form>
   );
 }

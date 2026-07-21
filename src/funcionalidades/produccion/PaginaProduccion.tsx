@@ -4,6 +4,7 @@ import { Boton } from '@/componentes/ui/boton';
 import { Campo, Entrada, AreaTexto, Selector } from '@/componentes/ui/campo';
 import { Tarjeta } from '@/componentes/ui/tarjeta';
 import { useClientes } from '@/funcionalidades/clientes/hooks';
+import { usePermisos } from '@/permisos/usePermisos';
 import { TarjetaTarea } from './TarjetaTarea';
 import {
   useTablero,
@@ -34,6 +35,8 @@ const FORM_INICIAL = {
 
 /** Tablero de producción: tareas del equipo agrupadas por estado. */
 export function PaginaProduccion() {
+  const { puedeEditar } = usePermisos();
+  const gestiona = puedeEditar('produccion');
   const [clienteFiltro, setClienteFiltro] = useState('');
   const [publicacionFiltro, setPublicacionFiltro] = useState('');
   const [creando, setCreando] = useState(false);
@@ -87,12 +90,14 @@ export function PaginaProduccion() {
           <h1 className="text-2xl font-bold">Producción</h1>
           <p className="text-slate-500">Las tareas del equipo sobre cada publicación.</p>
         </div>
-        <Boton
-          onClick={() => setCreando((v) => !v)}
-          variante={creando ? 'secundario' : 'primario'}
-        >
-          {creando ? 'Cancelar' : 'Nueva tarea'}
-        </Boton>
+        {gestiona && (
+          <Boton
+            onClick={() => setCreando((v) => !v)}
+            variante={creando ? 'secundario' : 'primario'}
+          >
+            {creando ? 'Cancelar' : 'Nueva tarea'}
+          </Boton>
+        )}
       </div>
 
       <div className="flex gap-3 rounded-md border border-marca/20 bg-marca/5 p-4 text-sm text-slate-600">
@@ -112,7 +117,7 @@ export function PaginaProduccion() {
         </div>
       </div>
 
-      {creando && (
+      {creando && gestiona && (
         <Tarjeta className="p-6">
           <h2 className="mb-4 text-lg font-semibold">Nueva tarea</h2>
           <form className="grid gap-4 sm:grid-cols-2" onSubmit={enviar}>

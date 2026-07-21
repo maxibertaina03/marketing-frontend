@@ -1,7 +1,9 @@
 import { useState, type FormEvent } from 'react';
+import { Info } from 'lucide-react';
 import { Boton } from '@/componentes/ui/boton';
 import { Campo, Entrada, AreaTexto, Selector } from '@/componentes/ui/campo';
 import { Tarjeta } from '@/componentes/ui/tarjeta';
+import { useClientes } from '@/funcionalidades/clientes/hooks';
 import { TarjetaTarea } from './TarjetaTarea';
 import {
   useTablero,
@@ -32,15 +34,28 @@ const FORM_INICIAL = {
 
 /** Tablero de producción: tareas del equipo agrupadas por estado. */
 export function PaginaProduccion() {
+  const [clienteFiltro, setClienteFiltro] = useState('');
   const [publicacionFiltro, setPublicacionFiltro] = useState('');
   const [creando, setCreando] = useState(false);
   const [form, setForm] = useState(FORM_INICIAL);
 
-  const { data: tablero, isLoading } = useTablero(
-    publicacionFiltro ? { publicacionId: publicacionFiltro } : {},
-  );
+  const { data: tablero, isLoading } = useTablero({
+    ...(clienteFiltro ? { clienteId: clienteFiltro } : {}),
+    ...(publicacionFiltro ? { publicacionId: publicacionFiltro } : {}),
+  });
+  const { data: clientes = [] } = useClientes();
   const { data: publicaciones = [] } = usePublicacionesParaTareas();
   const { data: miembros = [] } = useMiembros();
+
+  // Al filtrar por cliente, las publicaciones (del filtro y del alta) se acotan a esa marca.
+  const publicacionesVisibles = clienteFiltro
+    ? publicaciones.filter((p) => p.clienteId === clienteFiltro)
+    : publicaciones;
+
+  function cambiarClienteFiltro(id: string) {
+    setClienteFiltro(id);
+    setPublicacionFiltro('');
+  }
 
   const crear = useCrearTarea();
   const actualizar = useActualizarTarea();
@@ -80,6 +95,23 @@ export function PaginaProduccion() {
         </Boton>
       </div>
 
+      <div className="flex gap-3 rounded-md border border-marca/20 bg-marca/5 p-4 text-sm text-slate-600">
+        <Info className="mt-0.5 size-5 shrink-0 text-marca" />
+        <div className="space-y-1">
+          <p>
+            Acá el equipo lleva el <strong>trabajo</strong> de cada publicación (diseñar, redactar,
+            editar…). Cada <strong>tarea</strong> se crea sobre una <strong>publicación</strong> del
+            calendario con el botón <strong>“Nueva tarea”</strong>.
+          </p>
+          <p className="text-slate-500">
+            El estado de la tarea (Pendiente → En curso → Bloqueada → Hecha) es el avance del
+            trabajo, y es <strong>distinto</strong> del estado editorial de la publicación
+            (Borrador, Aprobado, Publicado…), que se maneja en <strong>Calendario</strong> y{' '}
+            <strong>Aprobaciones</strong>.
+          </p>
+        </div>
+      </div>
+
       {creando && (
         <Tarjeta className="p-6">
           <h2 className="mb-4 text-lg font-semibold">Nueva tarea</h2>
@@ -91,7 +123,7 @@ export function PaginaProduccion() {
                 required
               >
                 <option value="">Elegí una publicación…</option>
-                {publicaciones.map((p) => (
+                {publicacionesVisibles.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.titulo}
                   </option>
@@ -160,6 +192,20 @@ export function PaginaProduccion() {
       )}
 
       <div className="flex flex-wrap items-end gap-3">
+        <Campo etiqueta="Filtrar por cliente">
+          <Selector
+            className="w-64"
+            value={clienteFiltro}
+            onChange={(e) => cambiarClienteFiltro(e.target.value)}
+          >
+            <option value="">Todos los clientes</option>
+            {clientes.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.nombre}
+              </option>
+            ))}
+          </Selector>
+        </Campo>
         <Campo etiqueta="Filtrar por publicación">
           <Selector
             className="w-72"

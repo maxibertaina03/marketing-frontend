@@ -1,23 +1,28 @@
 import { useState } from 'react';
 import { Eye, Users, Heart, FileText } from 'lucide-react';
-import { Boton } from '@/componentes/ui/boton';
-import { Campo, Selector } from '@/componentes/ui/campo';
+import { Campo, Entrada, Selector } from '@/componentes/ui/campo';
 import { Tarjeta } from '@/componentes/ui/tarjeta';
 import { useClientes } from '@/funcionalidades/clientes/hooks';
 import { useClienteActivo } from '@/contexto/contexto-cliente-activo';
-import { useResumenMetricas, useSimularMetricas } from './hooks';
+import { useResumenMetricas } from './hooks';
 
 const num = (n: number) => n.toLocaleString('es-AR');
 
-/** Dashboard de métricas por cliente (Fase 4). Datos de prueba hasta la ingesta de Meta. */
+/** Dashboard de métricas reales por marca, con filtros de fecha y tipo de medio. */
 export function PaginaDashboard() {
   const { clienteActivoId } = useClienteActivo();
   const [clienteId, setClienteId] = useState('');
   // La marca activa manda; si hay una, se oculta el selector local.
   const clienteEfectivo = clienteActivoId || clienteId;
+  const [desde, setDesde] = useState('');
+  const [hasta, setHasta] = useState('');
+  const [tipoMedio, setTipoMedio] = useState('');
   const { data: clientes = [] } = useClientes();
-  const { data: resumen, isLoading } = useResumenMetricas(clienteEfectivo);
-  const simular = useSimularMetricas();
+  const { data: resumen, isLoading } = useResumenMetricas(clienteEfectivo, {
+    desde: desde || undefined,
+    hasta: hasta || undefined,
+    tipoMedio: tipoMedio || undefined,
+  });
 
   const t = resumen?.totales;
   const engagement = t && t.alcance > 0 ? ((t.interacciones / t.alcance) * 100).toFixed(1) : '0';
@@ -25,20 +30,9 @@ export function PaginaDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-slate-500">Métricas de rendimiento por marca.</p>
-        </div>
-        {clienteEfectivo && (
-          <Boton
-            variante="contorno"
-            onClick={() => simular.mutate(clienteEfectivo)}
-            disabled={simular.isPending}
-          >
-            {simular.isPending ? 'Generando…' : 'Generar datos de prueba'}
-          </Boton>
-        )}
+      <div>
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <p className="text-slate-500">Métricas reales de Instagram, por marca.</p>
       </div>
 
       {!clienteActivoId && (
@@ -58,6 +52,47 @@ export function PaginaDashboard() {
         </Campo>
       )}
 
+      {clienteEfectivo && (
+        <div className="flex flex-wrap items-end gap-3">
+          <Campo etiqueta="Tipo de contenido">
+            <Selector
+              className="w-52"
+              value={tipoMedio}
+              onChange={(e) => setTipoMedio(e.target.value)}
+            >
+              <option value="">Todo</option>
+              <option value="FEED">Publicaciones</option>
+              <option value="REELS">Reels</option>
+            </Selector>
+          </Campo>
+          <Campo etiqueta="Desde">
+            <Entrada
+              type="date"
+              className="w-44"
+              value={desde}
+              onChange={(e) => setDesde(e.target.value)}
+            />
+          </Campo>
+          <Campo etiqueta="Hasta">
+            <Entrada
+              type="date"
+              className="w-44"
+              value={hasta}
+              onChange={(e) => setHasta(e.target.value)}
+            />
+          </Campo>
+          {(desde || hasta || tipoMedio) && (
+            <button
+              type="button"
+              className="pb-2 text-sm text-marca hover:underline"
+              onClick={() => { setDesde(''); setHasta(''); setTipoMedio(''); }}
+            >
+              Limpiar filtros
+            </button>
+          )}
+        </div>
+      )}
+
       {!clienteEfectivo ? (
         <p className="rounded-md border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">
           Elegí una marca para ver sus métricas.
@@ -66,8 +101,8 @@ export function PaginaDashboard() {
         <p className="text-slate-500">Cargando métricas…</p>
       ) : sinDatos ? (
         <p className="rounded-md border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">
-          Todavía no hay métricas para esta marca. Generá datos de prueba con el botón de arriba
-          (la marca necesita tener publicaciones).
+          No hay métricas para estos filtros. Conectá el Instagram de la marca en su ficha y usá
+          “Sincronizar métricas”, o probá ampliando el rango de fechas.
         </p>
       ) : (
         t && (

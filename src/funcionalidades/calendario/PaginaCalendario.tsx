@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { CalendarDays, LayoutGrid, Plus, X, Pencil, Trash2 } from 'lucide-react';
+import { usePermisos } from '@/permisos/usePermisos';
 import { Boton } from '@/componentes/ui/boton';
 import {
   Tarjeta,
@@ -45,6 +46,7 @@ const COLORES_ESTADO: Record<EstadoContenido, string> = {
 const ESTADOS_FLUJO: EstadoContenido[] = ['BORRADOR', 'EN_REVISION', 'APROBADO', 'PROGRAMADO', 'PUBLICADO', 'RECHAZADO'];
 
 export function PaginaCalendario() {
+  const { puedeEditar } = usePermisos();
   const hoy = new Date();
   const [vistaCalendario, setVistaCalendario] = useState<VistaCalendario>('mensual');
   const [anio, setAnio] = useState(hoy.getFullYear());
@@ -157,12 +159,14 @@ export function PaginaCalendario() {
                 <CalendarDays className="size-4" /> Semana
               </button>
             </div>
-            <Boton
-              tamano="md"
-              onClick={() => { setPublicacionSeleccionada(null); setFechaClickeada(undefined); setSeleccion(null); setModoEdicion(false); setModalAbierto(true); }}
-            >
-              <Plus className="size-4" /> Nueva publicación
-            </Boton>
+            {puedeEditar('contenido') && (
+              <Boton
+                tamano="md"
+                onClick={() => { setPublicacionSeleccionada(null); setFechaClickeada(undefined); setSeleccion(null); setModoEdicion(false); setModalAbierto(true); }}
+              >
+                <Plus className="size-4" /> Nueva publicación
+              </Boton>
+            )}
           </div>
         </div>
 
@@ -210,7 +214,7 @@ export function PaginaCalendario() {
             </TarjetaCabecera>
             <TarjetaContenido>
               {/* Formulario nueva o editar */}
-              {(!publicacionSeleccionada || modoEdicion) && (
+              {(!publicacionSeleccionada || modoEdicion) && puedeEditar('contenido') && (
                 <>
                   {/* Alta: primero elegir cliente → estrategia */}
                   {!publicacionSeleccionada && !seleccion && (
@@ -280,8 +284,8 @@ export function PaginaCalendario() {
                               ? COLORES_ESTADO[e] + ' ring-2 ring-offset-1 ring-current'
                               : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                           }`}
-                          onClick={() => handleCambiarEstado(e)}
-                          disabled={cambiarEstadoMutation.isPending}
+                          onClick={puedeEditar('contenido') ? () => handleCambiarEstado(e) : undefined}
+                          disabled={!puedeEditar('contenido') || cambiarEstadoMutation.isPending}
                         >
                           {ETIQUETAS_ESTADO[e]}
                         </button>
@@ -302,19 +306,21 @@ export function PaginaCalendario() {
                     </p>
                   </div>
 
-                  <div className="flex gap-2 pt-2 border-t border-slate-100">
-                    <Boton variante="contorno" tamano="sm" onClick={() => setModoEdicion(true)}>
-                      <Pencil className="size-3.5" /> Editar
-                    </Boton>
-                    <Boton
-                      variante="peligro"
-                      tamano="sm"
-                      onClick={() => handleEliminar(publicacionSeleccionada.id)}
-                      disabled={eliminarMutation.isPending}
-                    >
-                      <Trash2 className="size-3.5" /> Eliminar
-                    </Boton>
-                  </div>
+                  {puedeEditar('contenido') && (
+                    <div className="flex gap-2 pt-2 border-t border-slate-100">
+                      <Boton variante="contorno" tamano="sm" onClick={() => setModoEdicion(true)}>
+                        <Pencil className="size-3.5" /> Editar
+                      </Boton>
+                      <Boton
+                        variante="peligro"
+                        tamano="sm"
+                        onClick={() => handleEliminar(publicacionSeleccionada.id)}
+                        disabled={eliminarMutation.isPending}
+                      >
+                        <Trash2 className="size-3.5" /> Eliminar
+                      </Boton>
+                    </div>
+                  )}
                 </div>
               )}
             </TarjetaContenido>

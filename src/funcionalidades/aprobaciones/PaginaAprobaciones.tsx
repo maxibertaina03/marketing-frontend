@@ -58,7 +58,7 @@ function ModalDetalle({ id, onCerrar }: { id: string; onCerrar: () => void }) {
   const { data: pub, isLoading } = useDetalleAprobacion(id);
   const aprobar = useAprobar();
   const rechazar = useRechazar();
-  const puedeEditar = usePermisos().puedeEditar('aprobaciones');
+  const { puedeEditar } = usePermisos();
   const [motivo, setMotivo] = useState('');
   const [vista, setVista] = useState<'detalle' | 'rechazar'>('detalle');
 
@@ -102,7 +102,7 @@ function ModalDetalle({ id, onCerrar }: { id: string; onCerrar: () => void }) {
               <img src={pub.imagenUrl} alt="" className="rounded-lg max-h-40 object-cover" />
             )}
 
-            {vista === 'detalle' && pub.estado === 'EN_REVISION' && puedeEditar && (
+            {vista === 'detalle' && pub.estado === 'EN_REVISION' && puedeEditar('aprobaciones') && (
               <div className="flex gap-3 pt-2">
                 <Boton variante="primario" onClick={handleAprobar} disabled={aprobar.isPending} className="flex-1">
                   {aprobar.isPending ? 'Aprobando…' : '✓ Aprobar'}
@@ -143,8 +143,8 @@ function TarjetaKanban({
   onVerDetalle: (id: string) => void;
 }) {
   const enviar = useEnviarRevision();
-  const puedeEditar = usePermisos().puedeEditar('aprobaciones');
-  const puedeEnviar = puedeEditar && (pub.estado === 'BORRADOR' || pub.estado === 'RECHAZADO');
+  const { puedeEditar } = usePermisos();
+  const puedeEnviar = puedeEditar('aprobaciones') && (pub.estado === 'BORRADOR' || pub.estado === 'RECHAZADO');
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm space-y-2">
@@ -158,7 +158,7 @@ function TarjetaKanban({
       )}
 
       <div className="flex gap-1.5 pt-1">
-        {pub.estado === 'EN_REVISION' && puedeEditar && (
+        {pub.estado === 'EN_REVISION' && puedeEditar('aprobaciones') && (
           <Boton tamano="sm" variante="primario" onClick={() => onVerDetalle(pub.id)} className="flex-1 text-xs">
             Revisar
           </Boton>
@@ -168,7 +168,7 @@ function TarjetaKanban({
             Enviar a revisión
           </Boton>
         )}
-        {(pub.estado !== 'EN_REVISION' || !puedeEditar) && !puedeEnviar && (
+        {(pub.estado !== 'EN_REVISION' || !puedeEditar('aprobaciones')) && !puedeEnviar && (
           <Boton tamano="sm" variante="fantasma" onClick={() => onVerDetalle(pub.id)} className="flex-1 text-xs">
             Ver
           </Boton>

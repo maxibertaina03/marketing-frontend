@@ -39,6 +39,7 @@ export interface PublicacionResumen {
   id: string;
   titulo: string;
   estado: string;
+  clienteId: string;
 }
 
 /** Tarea tal como la devuelve el backend (con responsable y publicación incluidos). */

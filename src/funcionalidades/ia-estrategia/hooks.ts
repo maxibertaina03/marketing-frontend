@@ -55,6 +55,16 @@ export interface SalidaPilares {
   pilares: { nombre: string; descripcion: string; ejemplos: string[] }[];
 }
 
+export interface SalidaOportunidades {
+  resumen: string;
+  oportunidades: {
+    titulo: string;
+    descripcion: string;
+    accion: string;
+    impacto: 'ALTO' | 'MEDIO' | 'BAJO';
+  }[];
+}
+
 // ── Envelope común de ServicioIa ──────────────────────────────────────────────
 
 export interface RespuestaIa<T> {
@@ -120,6 +130,14 @@ export function useGenerarPilares() {
   return useMutation({
     mutationFn: (payload: PayloadPilares) =>
       api.post<RespuestaIa<SalidaPilares>>('/ia-estrategia/pilares', payload),
+  });
+}
+
+export function useGenerarOportunidades() {
+  const api = useApi();
+  return useMutation({
+    mutationFn: (payload: { clienteId: string; estrategiaId?: string }) =>
+      api.post<RespuestaIa<SalidaOportunidades>>('/ia-estrategia/oportunidades', payload),
   });
 }
 

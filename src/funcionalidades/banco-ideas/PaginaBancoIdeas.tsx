@@ -3,21 +3,25 @@ import { Link } from 'react-router-dom';
 import { Lightbulb, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { Tarjeta, TarjetaCabecera, TarjetaTitulo, TarjetaDescripcion, TarjetaContenido } from '@/componentes/ui/tarjeta';
 import { Boton } from '@/componentes/ui/boton';
+import { Selector } from '@/componentes/ui/campo';
+import { useClientes } from '@/funcionalidades/clientes/hooks';
 import { useBancoIdeas, type GeneracionIa } from '../ia-estrategia/hooks';
 import type {
   SalidaEstrategiaMensual,
   SalidaFoda,
   SalidaBuyerPersona,
   SalidaPilares,
+  SalidaOportunidades,
 } from '../ia-estrategia/hooks';
 
-type TipoFiltro = '' | 'ESTRATEGIA_MENSUAL' | 'FODA' | 'BUYER_PERSONA' | 'PILARES';
+type TipoFiltro = '' | 'ESTRATEGIA_MENSUAL' | 'FODA' | 'BUYER_PERSONA' | 'PILARES' | 'OPORTUNIDADES';
 
 const ETIQUETAS_TIPO: Record<string, string> = {
   ESTRATEGIA_MENSUAL: 'Estrategia mensual',
   FODA: 'Análisis FODA',
   BUYER_PERSONA: 'Buyer Persona',
   PILARES: 'Pilares de contenido',
+  OPORTUNIDADES: 'Oportunidades',
 };
 
 const COLORES_TIPO: Record<string, string> = {
@@ -25,6 +29,7 @@ const COLORES_TIPO: Record<string, string> = {
   FODA: 'bg-purple-100 text-purple-800',
   BUYER_PERSONA: 'bg-emerald-100 text-emerald-800',
   PILARES: 'bg-amber-100 text-amber-800',
+  OPORTUNIDADES: 'bg-rose-100 text-rose-800',
 };
 
 // ── Renders legibles por tipo ─────────────────────────────────────────────────
@@ -129,11 +134,37 @@ function RenderPilares({ salida }: { salida: SalidaPilares }) {
   );
 }
 
+function RenderOportunidades({ salida }: { salida: SalidaOportunidades }) {
+  const colorImpacto: Record<string, string> = {
+    ALTO: 'bg-rose-100 text-rose-700',
+    MEDIO: 'bg-amber-100 text-amber-700',
+    BAJO: 'bg-slate-100 text-slate-600',
+  };
+  return (
+    <div className="space-y-2 text-sm">
+      <p className="text-slate-600 leading-relaxed">{salida.resumen}</p>
+      {salida.oportunidades?.map((o, i) => (
+        <div key={i} className="rounded-md bg-slate-50 px-3 py-2 space-y-1">
+          <div className="flex items-center justify-between gap-2">
+            <p className="font-medium text-slate-800 text-xs">{o.titulo}</p>
+            <span className={`shrink-0 text-xs rounded-full px-1.5 py-0.5 font-medium ${colorImpacto[o.impacto] ?? ''}`}>
+              {o.impacto}
+            </span>
+          </div>
+          <p className="text-xs text-slate-600">{o.descripcion}</p>
+          <p className="text-xs text-marca font-medium">→ {o.accion}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function SalidaEstrategica({ tipo, salida }: { tipo: string; salida: unknown }) {
   if (tipo === 'ESTRATEGIA_MENSUAL') return <RenderEstrategiaMensual salida={salida as SalidaEstrategiaMensual} />;
   if (tipo === 'FODA') return <RenderFoda salida={salida as SalidaFoda} />;
   if (tipo === 'BUYER_PERSONA') return <RenderBuyerPersona salida={salida as SalidaBuyerPersona} />;
   if (tipo === 'PILARES') return <RenderPilares salida={salida as SalidaPilares} />;
+  if (tipo === 'OPORTUNIDADES') return <RenderOportunidades salida={salida as SalidaOportunidades} />;
   return (
     <pre className="text-xs bg-slate-50 rounded-md p-3 overflow-auto max-h-64 whitespace-pre-wrap text-slate-700">
       {JSON.stringify(salida, null, 2)}
@@ -186,11 +217,14 @@ function TarjetaGeneracion({ generacion: g }: { generacion: GeneracionIa }) {
 
 export function PaginaBancoIdeas() {
   const [tipoFiltro, setTipoFiltro] = useState<TipoFiltro>('');
+  const [clienteId, setClienteId] = useState('');
   const [pagina, setPagina] = useState(1);
   const limite = 12;
 
+  const { data: clientes = [] } = useClientes();
   const { data, isLoading } = useBancoIdeas({
     tipoBoton: tipoFiltro || undefined,
+    clienteId: clienteId || undefined,
     pagina,
     limite,
   });
@@ -211,20 +245,33 @@ export function PaginaBancoIdeas() {
         </Link>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {(['', 'ESTRATEGIA_MENSUAL', 'FODA', 'BUYER_PERSONA', 'PILARES'] as TipoFiltro[]).map((t) => (
-          <button
-            key={t}
-            className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${
-              tipoFiltro === t
-                ? 'bg-marca text-white border-marca'
-                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-            }`}
-            onClick={() => { setTipoFiltro(t); setPagina(1); }}
-          >
-            {t === '' ? 'Todos' : ETIQUETAS_TIPO[t]}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center gap-3">
+        <Selector
+          value={clienteId}
+          onChange={(e) => { setClienteId(e.target.value); setPagina(1); }}
+          className="w-48"
+        >
+          <option value="">Todos los clientes</option>
+          {clientes.map((c) => (
+            <option key={c.id} value={c.id}>{c.nombre}</option>
+          ))}
+        </Selector>
+
+        <div className="flex flex-wrap gap-2">
+          {(['', 'OPORTUNIDADES', 'ESTRATEGIA_MENSUAL', 'FODA', 'BUYER_PERSONA', 'PILARES'] as TipoFiltro[]).map((t) => (
+            <button
+              key={t}
+              className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${
+                tipoFiltro === t
+                  ? 'bg-marca text-white border-marca'
+                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+              }`}
+              onClick={() => { setTipoFiltro(t); setPagina(1); }}
+            >
+              {t === '' ? 'Todos' : ETIQUETAS_TIPO[t]}
+            </button>
+          ))}
+        </div>
       </div>
 
       {isLoading ? (

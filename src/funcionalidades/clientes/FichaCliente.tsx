@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApi } from '@/contexto/contexto-organizacion';
 import { Boton } from '@/componentes/ui/boton';
 import { Tarjeta } from '@/componentes/ui/tarjeta';
+import { usePermisos } from '@/permisos/usePermisos';
 import { FormularioCliente } from './FormularioCliente';
 import { ConexionMeta } from './ConexionMeta';
 import { ETIQUETA_ESTADO, type Cliente, type DatosCliente } from './tipos';
@@ -13,6 +14,8 @@ export function FichaCliente() {
   const api = useApi();
   const cliente = useQueryClient();
   const navegar = useNavigate();
+  const { puedeEditar } = usePermisos();
+  const editable = puedeEditar('clientes');
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['cliente', id],
@@ -61,26 +64,35 @@ export function FichaCliente() {
             {ETIQUETA_ESTADO[data.estado].texto}
           </span>
         </div>
-        <Boton
-          variante="peligro"
-          tamano="sm"
-          disabled={eliminar.isPending}
-          onClick={() => {
-            if (confirm(`¿Eliminar a "${data.nombre}"? Esta acción no se puede deshacer.`)) {
-              eliminar.mutate();
-            }
-          }}
-        >
-          Eliminar
-        </Boton>
+        {editable && (
+          <Boton
+            variante="peligro"
+            tamano="sm"
+            disabled={eliminar.isPending}
+            onClick={() => {
+              if (confirm(`¿Eliminar a "${data.nombre}"? Esta acción no se puede deshacer.`)) {
+                eliminar.mutate();
+              }
+            }}
+          >
+            Eliminar
+          </Boton>
+        )}
       </div>
 
       <Tarjeta className="p-6">
+        {!editable && (
+          <p className="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-500">
+            Estás viendo esta ficha en <strong>solo lectura</strong>: tu rol no puede editar
+            clientes.
+          </p>
+        )}
         <FormularioCliente
           inicial={data}
           guardando={guardar.isPending}
           textoBoton="Guardar cambios"
           onGuardar={(datos) => guardar.mutate(datos)}
+          soloLectura={!editable}
         />
         {guardar.isSuccess && !guardar.isPending && (
           <p className="mt-3 text-sm text-green-600">Cambios guardados.</p>

@@ -5,6 +5,7 @@ import { useApi } from '@/contexto/contexto-organizacion';
 import { Boton } from '@/componentes/ui/boton';
 import { Entrada, Selector } from '@/componentes/ui/campo';
 import { Tarjeta } from '@/componentes/ui/tarjeta';
+import { usePermisos } from '@/permisos/usePermisos';
 import { FormularioCliente } from './FormularioCliente';
 import { ESTADOS_CLIENTE, ETIQUETA_ESTADO, type Cliente, type DatosCliente } from './tipos';
 
@@ -12,6 +13,7 @@ import { ESTADOS_CLIENTE, ETIQUETA_ESTADO, type Cliente, type DatosCliente } fro
 export function PaginaClientes() {
   const api = useApi();
   const cliente = useQueryClient();
+  const { puedeEditar } = usePermisos();
   const [estado, setEstado] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [creando, setCreando] = useState(false);
@@ -42,12 +44,14 @@ export function PaginaClientes() {
           <h1 className="text-2xl font-bold">Clientes</h1>
           <p className="text-slate-500">Las marcas que gestiona tu agencia.</p>
         </div>
-        <Boton onClick={() => setCreando((v) => !v)} variante={creando ? 'secundario' : 'primario'}>
-          {creando ? 'Cancelar' : 'Nuevo cliente'}
-        </Boton>
+        {puedeEditar('clientes') && (
+          <Boton onClick={() => setCreando((v) => !v)} variante={creando ? 'secundario' : 'primario'}>
+            {creando ? 'Cancelar' : 'Nuevo cliente'}
+          </Boton>
+        )}
       </div>
 
-      {creando && (
+      {creando && puedeEditar('clientes') && (
         <Tarjeta className="p-6">
           <h2 className="mb-4 text-lg font-semibold">Nuevo cliente</h2>
           <FormularioCliente

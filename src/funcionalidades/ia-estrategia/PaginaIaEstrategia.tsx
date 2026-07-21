@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, Brain, Users, Target, BarChart3, Lightbulb, ChevronLeft } from 'lucide-react';
+import { Sparkles, Brain, Users, Target, BarChart3, Lightbulb, ChevronLeft, TrendingUp } from 'lucide-react';
 import { Boton } from '@/componentes/ui/boton';
 import {
   Tarjeta,
@@ -15,17 +15,27 @@ import {
   useGenerarFoda,
   useGenerarBuyerPersona,
   useGenerarPilares,
+  useGenerarOportunidades,
   type SalidaEstrategiaMensual,
   type SalidaFoda,
   type SalidaBuyerPersona,
   type SalidaPilares,
+  type SalidaOportunidades,
   type RespuestaIa,
 } from './hooks';
 
-type BotonIa = 'estrategia-mensual' | 'foda' | 'buyer-persona' | 'pilares';
-type SalidaUnion = SalidaEstrategiaMensual | SalidaFoda | SalidaBuyerPersona | SalidaPilares;
+type BotonIa = 'estrategia-mensual' | 'foda' | 'buyer-persona' | 'pilares' | 'oportunidades';
+type SalidaUnion = SalidaEstrategiaMensual | SalidaFoda | SalidaBuyerPersona | SalidaPilares | SalidaOportunidades;
 
-const BOTONES: { id: BotonIa; titulo: string; descripcion: string; icono: React.ElementType; color: string }[] = [
+const BOTONES: { id: BotonIa; titulo: string; descripcion: string; icono: React.ElementType; color: string; badge?: string }[] = [
+  {
+    id: 'oportunidades',
+    titulo: 'Oportunidades de Crecimiento',
+    descripcion: 'IA consultora que cruza tu estrategia con métricas reales y detecta oportunidades accionables.',
+    icono: TrendingUp,
+    color: 'text-rose-600 bg-rose-50',
+    badge: 'Nuevo',
+  },
   {
     id: 'estrategia-mensual',
     titulo: 'Estrategia mensual',
@@ -70,12 +80,14 @@ export function PaginaIaEstrategia() {
   const fodaMutation = useGenerarFoda();
   const buyerPersonaMutation = useGenerarBuyerPersona();
   const pilaresMutation = useGenerarPilares();
+  const oportunidadesMutation = useGenerarOportunidades();
 
   const pendiente =
     estrategiaMensualMutation.isPending ||
     fodaMutation.isPending ||
     buyerPersonaMutation.isPending ||
-    pilaresMutation.isPending;
+    pilaresMutation.isPending ||
+    oportunidadesMutation.isPending;
 
   function volver() {
     setBotonActivo(null);
@@ -85,6 +97,7 @@ export function PaginaIaEstrategia() {
     fodaMutation.reset();
     buyerPersonaMutation.reset();
     pilaresMutation.reset();
+    oportunidadesMutation.reset();
   }
 
   async function handleGenerar() {
@@ -99,6 +112,8 @@ export function PaginaIaEstrategia() {
         res = await fodaMutation.mutateAsync(base);
       } else if (botonActivo === 'buyer-persona') {
         res = await buyerPersonaMutation.mutateAsync(base);
+      } else if (botonActivo === 'oportunidades') {
+        res = await oportunidadesMutation.mutateAsync(base);
       } else {
         res = await pilaresMutation.mutateAsync({ ...base, cantidad });
       }
@@ -112,7 +127,8 @@ export function PaginaIaEstrategia() {
     estrategiaMensualMutation.error ??
     fodaMutation.error ??
     buyerPersonaMutation.error ??
-    pilaresMutation.error;
+    pilaresMutation.error ??
+    oportunidadesMutation.error;
 
   // ── Vista resultado ──────────────────────────────────────────────────────────
   if (resultado) {
@@ -276,8 +292,13 @@ export function PaginaIaEstrategia() {
                   <span className={`size-10 rounded-lg flex items-center justify-center ${b.color}`}>
                     <Icono className="size-5" />
                   </span>
-                  <div>
-                    <TarjetaTitulo>{b.titulo}</TarjetaTitulo>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <TarjetaTitulo>{b.titulo}</TarjetaTitulo>
+                      {b.badge && (
+                        <span className="shrink-0 text-xs bg-rose-100 text-rose-700 rounded-full px-1.5 py-0.5 font-medium">{b.badge}</span>
+                      )}
+                    </div>
                     <TarjetaDescripcion>{b.descripcion}</TarjetaDescripcion>
                   </div>
                 </div>
@@ -392,6 +413,46 @@ function ResultadoIa({ boton, respuesta }: { boton: BotonIa; respuesta: Respuest
           ))}
         </TarjetaContenido>
       </Tarjeta>
+    );
+  }
+
+  if (boton === 'oportunidades') {
+    const salida = respuesta.salida as SalidaOportunidades;
+    const colorImpacto: Record<string, string> = {
+      ALTO: 'bg-rose-100 text-rose-700',
+      MEDIO: 'bg-amber-100 text-amber-700',
+      BAJO: 'bg-slate-100 text-slate-600',
+    };
+    return (
+      <div className="space-y-4">
+        <Tarjeta>
+          <TarjetaCabecera><TarjetaTitulo>Panorama actual</TarjetaTitulo></TarjetaCabecera>
+          <TarjetaContenido>
+            <p className="text-sm text-slate-700 leading-relaxed">{salida.resumen}</p>
+          </TarjetaContenido>
+        </Tarjeta>
+        <div className="space-y-3">
+          {salida.oportunidades.map((o, i) => (
+            <Tarjeta key={i}>
+              <TarjetaCabecera>
+                <div className="flex items-start justify-between gap-3">
+                  <TarjetaTitulo>{o.titulo}</TarjetaTitulo>
+                  <span className={`shrink-0 text-xs rounded-full px-2 py-0.5 font-medium ${colorImpacto[o.impacto] ?? 'bg-slate-100 text-slate-600'}`}>
+                    {o.impacto}
+                  </span>
+                </div>
+              </TarjetaCabecera>
+              <TarjetaContenido className="space-y-2">
+                <p className="text-sm text-slate-600">{o.descripcion}</p>
+                <div className="rounded-md bg-marca/5 border border-marca/20 px-3 py-2">
+                  <p className="text-xs font-semibold text-marca mb-0.5">Acción inmediata</p>
+                  <p className="text-sm text-slate-700">{o.accion}</p>
+                </div>
+              </TarjetaContenido>
+            </Tarjeta>
+          ))}
+        </div>
+      </div>
     );
   }
 

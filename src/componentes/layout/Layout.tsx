@@ -5,6 +5,7 @@ import { useOrganizacion } from '@/contexto/contexto-organizacion';
 import { seccionesParaRol, rolPuedeVerRuta, rutaInicialPorRol } from './secciones';
 import { SelectorOrganizacion } from './SelectorOrganizacion';
 import { SelectorClienteActivo } from './SelectorClienteActivo';
+import { Campanita } from './Campanita';
 
 /** Layout principal de la app autenticada: sidebar (filtrado por rol) + contenido. */
 export function Layout() {
@@ -54,7 +55,10 @@ export function Layout() {
             <SelectorOrganizacion />
             <SelectorClienteActivo />
           </div>
-          <UserButton />
+          <div className="flex items-center gap-2">
+            <Campanita />
+            <UserButton />
+          </div>
         </header>
         <main className="flex-1 overflow-auto p-6">
           {bloqueado ? <Navigate to={rutaInicialPorRol(rol)} replace /> : <Outlet />}

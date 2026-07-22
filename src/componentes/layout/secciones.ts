@@ -16,6 +16,7 @@ import {
   BrainCircuit,
   Settings,
   PenLine,
+  CreditCard,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -72,6 +73,7 @@ export const SECCIONES: SeccionMenu[] = [
   { ruta: '/informes', etiqueta: 'Informes', icono: FileText, disponible: true, roles: ANALITICA },
   { ruta: '/equipo', etiqueta: 'Equipo', icono: UserCog, disponible: true, roles: INTERNOS },
   { ruta: '/configuracion', etiqueta: 'Configuración', icono: Settings, disponible: true, roles: GESTORES },
+  { ruta: '/planes', etiqueta: 'Planes', icono: CreditCard, disponible: true, roles: ['ADMIN'] },
 ];
 
 /** Secciones visibles para un rol (vacío si el rol es desconocido). */

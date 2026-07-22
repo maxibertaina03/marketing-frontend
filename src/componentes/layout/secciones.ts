@@ -15,6 +15,7 @@ import {
   Store,
   BrainCircuit,
   Settings,
+  PenLine,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -51,7 +52,14 @@ export const SECCIONES: SeccionMenu[] = [
   { ruta: '/clientes', etiqueta: 'Clientes', icono: Users, disponible: true, roles: INTERNOS },
   { ruta: '/estrategia', etiqueta: 'Estrategia de marca', icono: Target, disponible: true, roles: INTERNOS },
   { ruta: '/calendario', etiqueta: 'Calendario', icono: CalendarDays, disponible: true, roles: INTERNOS },
-  { ruta: '/ia', etiqueta: 'Centro de IA', icono: Sparkles, disponible: true, roles: GESTORES },
+  { ruta: '/ia', etiqueta: 'IA Estratégica', icono: Sparkles, disponible: true, roles: GESTORES },
+  {
+    ruta: '/ia-contenido',
+    etiqueta: 'IA de Contenido',
+    icono: PenLine,
+    disponible: true,
+    roles: ['ADMIN', 'COMMUNITY_MANAGER', 'COPYWRITER'],
+  },
   { ruta: '/ideas', etiqueta: 'Banco de ideas', icono: Lightbulb, disponible: true, roles: INTERNOS },
   { ruta: '/biblioteca-copys', etiqueta: 'Biblioteca de copys', icono: FileText, disponible: true, roles: INTERNOS },
   { ruta: '/campanias', etiqueta: 'Campañas', icono: Megaphone, disponible: true, roles: GESTORES },

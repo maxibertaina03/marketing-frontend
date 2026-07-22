@@ -6,8 +6,9 @@ import { Tarjeta } from '@/componentes/ui/tarjeta';
 import { useClientes } from '@/funcionalidades/clientes/hooks';
 import { useClienteActivo } from '@/contexto/contexto-cliente-activo';
 import { useEstadoMeta, useSincronizarMeta } from '@/funcionalidades/meta/hooks';
-import { useResumenMetricas, useDetalleMetricas } from './hooks';
+import { useResumenMetricas, useDetalleMetricas, useMetricasCuenta } from './hooks';
 import { DetallePublicaciones } from './DetallePublicaciones';
+import { MetricasCuenta } from './MetricasCuenta';
 
 const num = (n: number) => n.toLocaleString('es-AR');
 
@@ -30,6 +31,7 @@ export function PaginaDashboard() {
   };
   const { data: resumen, isLoading } = useResumenMetricas(clienteEfectivo, filtros);
   const { data: detalle = [] } = useDetalleMetricas(clienteEfectivo, filtros);
+  const { data: diasCuenta = [] } = useMetricasCuenta(clienteEfectivo, filtros);
 
   const t = resumen?.totales;
   const engagement = t && t.alcance > 0 ? ((t.interacciones / t.alcance) * 100).toFixed(1) : '0';
@@ -207,6 +209,7 @@ export function PaginaDashboard() {
                 </div>
               </Tarjeta>
             </div>
+            <MetricasCuenta dias={diasCuenta} />
             <DetallePublicaciones items={detalle} />
           </>
         )

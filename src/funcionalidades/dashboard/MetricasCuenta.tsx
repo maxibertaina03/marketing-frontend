@@ -2,6 +2,13 @@ import { Tarjeta } from '@/componentes/ui/tarjeta';
 import type { DiaCuenta } from './hooks';
 
 const num = (n: number) => n.toLocaleString('es-AR');
+/** Muestra "—" cuando Instagram no expone la métrica (distinto de un cero real). */
+const val = (n: number | null) => (n === null ? '—' : num(n));
+/** Suma ignorando los null; devuelve null si ninguna medición está disponible. */
+const suma = (dias: DiaCuenta[], campo: keyof Omit<DiaCuenta, 'fecha'>) => {
+  const valores = dias.map((d) => d[campo]).filter((v): v is number => v !== null);
+  return valores.length === 0 ? null : valores.reduce((a, b) => a + b, 0);
+};
 const dia = (iso: string) =>
   new Date(`${iso}T00:00:00`).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
 
@@ -9,19 +16,18 @@ const dia = (iso: string) =>
  * Serie diaria de la cuenta de Instagram. A diferencia de las publicaciones,
  * estos valores ya son diarios y vienen con historial (~30 días).
  */
+const NO_DISPONIBLE = 'Instagram no la expone para esta cuenta';
+
 export function MetricasCuenta({ dias }: { dias: DiaCuenta[] }) {
   if (dias.length === 0) return null;
 
-  const total = dias.reduce(
-    (acc, d) => ({
-      alcance: acc.alcance + d.alcance,
-      vistas: acc.vistas + d.vistas,
-      visitasPerfil: acc.visitasPerfil + d.visitasPerfil,
-    }),
-    { alcance: 0, vistas: 0, visitasPerfil: 0 },
-  );
-  const seguidores = [...dias].reverse().find((d) => d.seguidores > 0)?.seguidores ?? 0;
-  const pico = Math.max(...dias.map((d) => d.alcance), 1);
+  const total = {
+    alcance: suma(dias, 'alcance'),
+    vistas: suma(dias, 'vistas'),
+    visitasPerfil: suma(dias, 'visitasPerfil'),
+  };
+  const seguidores = [...dias].reverse().find((d) => d.seguidores !== null)?.seguidores ?? null;
+  const pico = Math.max(...dias.map((d) => d.alcance ?? 0), 1);
 
   return (
     <Tarjeta className="overflow-hidden">
@@ -34,13 +40,25 @@ export function MetricasCuenta({ dias }: { dias: DiaCuenta[] }) {
       </div>
 
       <div className="grid gap-4 border-b border-slate-100 px-4 py-3 sm:grid-cols-4">
-        <Dato etiqueta="Alcance (período)" valor={num(total.alcance)} />
-        <Dato etiqueta="Vistas (período)" valor={num(total.vistas)} />
-        <Dato etiqueta="Visitas al perfil" valor={num(total.visitasPerfil)} />
+        <Dato
+          etiqueta="Alcance (período)"
+          valor={val(total.alcance)}
+          nota={total.alcance === null ? NO_DISPONIBLE : undefined}
+        />
+        <Dato
+          etiqueta="Vistas (período)"
+          valor={val(total.vistas)}
+          nota={total.vistas === null ? NO_DISPONIBLE : undefined}
+        />
+        <Dato
+          etiqueta="Visitas al perfil"
+          valor={val(total.visitasPerfil)}
+          nota={total.visitasPerfil === null ? NO_DISPONIBLE : undefined}
+        />
         <Dato
           etiqueta="Seguidores"
-          valor={seguidores > 0 ? num(seguidores) : '—'}
-          nota={seguidores === 0 ? 'Requiere +100 seguidores' : undefined}
+          valor={val(seguidores)}
+          nota={seguidores === null ? 'Requiere +100 seguidores' : undefined}
         />
       </div>
 
@@ -63,14 +81,14 @@ export function MetricasCuenta({ dias }: { dias: DiaCuenta[] }) {
                     <div className="h-1.5 w-24 overflow-hidden rounded-full bg-slate-100">
                       <div
                         className="h-full rounded-full bg-marca"
-                        style={{ width: `${Math.round((d.alcance / pico) * 100)}%` }}
+                        style={{ width: `${Math.round(((d.alcance ?? 0) / pico) * 100)}%` }}
                       />
                     </div>
-                    <span className="tabular-nums">{num(d.alcance)}</span>
+                    <span className="tabular-nums">{val(d.alcance)}</span>
                   </div>
                 </td>
-                <td className="px-3 py-2 text-right tabular-nums">{num(d.vistas)}</td>
-                <td className="px-3 py-2 text-right tabular-nums">{num(d.visitasPerfil)}</td>
+                <td className="px-3 py-2 text-right tabular-nums">{val(d.vistas)}</td>
+                <td className="px-3 py-2 text-right tabular-nums">{val(d.visitasPerfil)}</td>
               </tr>
             ))}
           </tbody>

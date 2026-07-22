@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { CalendarDays, LayoutGrid, Plus, X, Pencil, Trash2, Send, ExternalLink, CheckCircle2 } from 'lucide-react';
 import { usePermisos } from '@/permisos/usePermisos';
+import { useClienteActivo } from '@/contexto/contexto-cliente-activo';
 import { Boton } from '@/componentes/ui/boton';
 import {
   Tarjeta,
@@ -48,6 +49,7 @@ const ESTADOS_FLUJO: EstadoContenido[] = ['BORRADOR', 'EN_REVISION', 'APROBADO',
 
 export function PaginaCalendario() {
   const { puedeEditar } = usePermisos();
+  const { clienteActivoId } = useClienteActivo();
   const hoy = new Date();
   const [vistaCalendario, setVistaCalendario] = useState<VistaCalendario>('mensual');
   const [anio, setAnio] = useState(hoy.getFullYear());
@@ -79,7 +81,11 @@ export function PaginaCalendario() {
     return { desde: inicio.toISOString(), hasta: fin.toISOString() };
   }, [vistaCalendario, anio, mes, semanaBase]);
 
-  const { data: publicaciones = [], isLoading } = usePublicaciones({ desde, hasta });
+  const { data: publicaciones = [], isLoading } = usePublicaciones({
+    clienteId: clienteActivoId || undefined,
+    desde,
+    hasta,
+  });
   const crearMutation = useCrearPublicacion();
   const actualizarMutation = useActualizarPublicacion(publicacionSeleccionada?.id ?? '');
   const eliminarMutation = useEliminarPublicacion();

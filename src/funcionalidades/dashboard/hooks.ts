@@ -68,10 +68,11 @@ export function useDetalleMetricas(clienteId: string, filtros: FiltrosMetricas =
 /** Un día de métricas de la cuenta de Instagram (ya vienen diarias de Meta). */
 export interface DiaCuenta {
   fecha: string;
-  alcance: number;
-  vistas: number;
-  visitasPerfil: number;
-  seguidores: number;
+  /** null = Instagram no expone esa métrica para esta cuenta (≠ de cero real). */
+  alcance: number | null;
+  vistas: number | null;
+  visitasPerfil: number | null;
+  seguidores: number | null;
 }
 
 /** Serie diaria de la cuenta (Instagram sí da historial acá, ~30 días). */

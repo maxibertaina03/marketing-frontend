@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useApi } from '@/contexto/contexto-organizacion';
+import { useEstadoMeta, useSincronizarMeta } from '@/funcionalidades/meta/hooks';
 import { Boton } from '@/componentes/ui/boton';
 import {
   Tarjeta,
@@ -10,13 +11,6 @@ import {
   TarjetaDescripcion,
   TarjetaContenido,
 } from '@/componentes/ui/tarjeta';
-
-interface EstadoMeta {
-  conectado: boolean;
-  igUsername?: string | null;
-  pageNombre?: string | null;
-  ultimaSync?: string | null;
-}
 
 /** Mensajes que devuelve el callback de Meta (vienen en el query param `?meta=`). */
 const AVISOS: Record<string, { texto: string; clase: string }> = {
@@ -50,10 +44,7 @@ export function ConexionMeta({ clienteId }: { clienteId: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const { data: estado, isLoading } = useQuery({
-    queryKey: ['meta-estado', clienteId],
-    queryFn: () => api.get<EstadoMeta>(`/meta/estado?clienteId=${clienteId}`),
-  });
+  const { data: estado, isLoading } = useEstadoMeta(clienteId);
 
   const conectar = useMutation({
     mutationFn: () => api.get<{ url: string }>(`/meta/conectar?clienteId=${clienteId}`),
@@ -62,13 +53,7 @@ export function ConexionMeta({ clienteId }: { clienteId: string }) {
     },
   });
 
-  const sincronizar = useMutation({
-    mutationFn: () =>
-      api.post<{ medios: number; sincronizadas: number }>('/meta/sincronizar', { clienteId }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['meta-estado', clienteId] });
-    },
-  });
+  const sincronizar = useSincronizarMeta();
 
   const desconectar = useMutation({
     mutationFn: () => api.delete(`/meta/conexion?clienteId=${clienteId}`),
@@ -103,7 +88,6 @@ export function ConexionMeta({ clienteId }: { clienteId: string }) {
                 <span className="font-medium text-slate-900">
                   {estado.igUsername ? `@${estado.igUsername}` : 'Instagram'}
                 </span>
-                {estado.pageNombre && ` · Página ${estado.pageNombre}`}
               </p>
               <p className="text-slate-400">
                 {estado.ultimaSync
@@ -116,7 +100,7 @@ export function ConexionMeta({ clienteId }: { clienteId: string }) {
               <Boton
                 tamano="sm"
                 disabled={sincronizar.isPending}
-                onClick={() => sincronizar.mutate()}
+                onClick={() => sincronizar.mutate(clienteId)}
               >
                 {sincronizar.isPending ? 'Sincronizando…' : 'Sincronizar métricas'}
               </Boton>

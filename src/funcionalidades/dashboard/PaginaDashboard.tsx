@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { Eye, Users, Heart, FileText } from 'lucide-react';
+import { Eye, Users, Heart, FileText, RefreshCw } from 'lucide-react';
+import { Boton } from '@/componentes/ui/boton';
 import { Campo, Entrada, Selector } from '@/componentes/ui/campo';
 import { Tarjeta } from '@/componentes/ui/tarjeta';
 import { useClientes } from '@/funcionalidades/clientes/hooks';
 import { useClienteActivo } from '@/contexto/contexto-cliente-activo';
+import { useEstadoMeta, useSincronizarMeta } from '@/funcionalidades/meta/hooks';
 import { useResumenMetricas } from './hooks';
 
 const num = (n: number) => n.toLocaleString('es-AR');
@@ -18,6 +20,8 @@ export function PaginaDashboard() {
   const [hasta, setHasta] = useState('');
   const [tipoMedio, setTipoMedio] = useState('');
   const { data: clientes = [] } = useClientes();
+  const { data: estadoMeta } = useEstadoMeta(clienteEfectivo);
+  const sincronizar = useSincronizarMeta();
   const { data: resumen, isLoading } = useResumenMetricas(clienteEfectivo, {
     desde: desde || undefined,
     hasta: hasta || undefined,
@@ -30,10 +34,42 @@ export function PaginaDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-slate-500">Métricas reales de Instagram, por marca.</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <p className="text-slate-500">Métricas reales de Instagram, por marca.</p>
+        </div>
+
+        {clienteEfectivo && estadoMeta?.conectado && (
+          <div className="text-right">
+            <Boton
+              variante="contorno"
+              onClick={() => sincronizar.mutate(clienteEfectivo)}
+              disabled={sincronizar.isPending}
+            >
+              <RefreshCw className={`size-4 ${sincronizar.isPending ? 'animate-spin' : ''}`} />
+              {sincronizar.isPending ? 'Actualizando…' : 'Actualizar métricas'}
+            </Boton>
+            <p className="mt-1 text-xs text-slate-400">
+              {sincronizar.isSuccess && !sincronizar.isPending
+                ? `Actualizado: ${sincronizar.data.sincronizadas} publicaciones`
+                : estadoMeta.ultimaSync
+                  ? `Última actualización: ${new Date(estadoMeta.ultimaSync).toLocaleString()}`
+                  : 'Nunca actualizado'}
+            </p>
+            {sincronizar.isError && (
+              <p className="mt-1 text-xs text-red-600">No se pudieron traer las métricas.</p>
+            )}
+          </div>
+        )}
       </div>
+
+      {clienteEfectivo && estadoMeta && !estadoMeta.conectado && (
+        <p className="rounded-md border border-dashed border-amber-200 bg-amber-50/50 p-4 text-sm text-amber-700">
+          Esta marca todavía no tiene Instagram conectado. Conectalo desde su ficha en{' '}
+          <strong>Clientes</strong> para ver métricas reales.
+        </p>
+      )}
 
       {!clienteActivoId && (
         <Campo etiqueta="Cliente">

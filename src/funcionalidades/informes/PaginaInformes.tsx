@@ -3,6 +3,8 @@ import { Tarjeta } from '@/componentes/ui/tarjeta';
 import { Boton } from '@/componentes/ui/boton';
 import { SelectorClienteEstrategia, type SeleccionPublicacion } from '@/funcionalidades/calendario/SelectorClienteEstrategia';
 import { useInformes, useInforme, useGenerarInforme, type ItemInforme } from './hooks';
+import { usePlan } from '@/planes/usePlan';
+import { AvisoPlan } from '@/planes/AvisoPlan';
 import type { SalidaAnalisis } from '@/funcionalidades/ia-metricas/hooks';
 
 function PanelInforme({ informe, onCerrar }: { informe: ItemInforme; onCerrar: () => void }) {
@@ -90,11 +92,11 @@ function PanelInforme({ informe, onCerrar }: { informe: ItemInforme; onCerrar: (
 }
 
 export function PaginaInformes() {
+  const { incluye } = usePlan();
   const [seleccion, setSeleccion] = useState<SeleccionPublicacion | null>(null);
   const [pagina, setPagina] = useState(1);
   const [idDetalle, setIdDetalle] = useState<string | null>(null);
   const [generando, setGenerando] = useState(false);
-
   const { data, isLoading, refetch } = useInformes({
     clienteId: seleccion?.clienteId,
     pagina,
@@ -102,6 +104,15 @@ export function PaginaInformes() {
   });
   const { data: informeDetalle } = useInforme(idDetalle);
   const generar = useGenerarInforme();
+
+  if (!incluye('informes')) {
+    return (
+      <AvisoPlan
+        funcionalidad="informes"
+        detalle="Generá informes mensuales por cliente con análisis de métricas e IA."
+      />
+    );
+  }
 
   const handleGenerar = async () => {
     if (!seleccion) return;

@@ -12,6 +12,8 @@ import {
 import { usePermisos } from '@/permisos/usePermisos';
 import { useClienteActivo } from '@/contexto/contexto-cliente-activo';
 import { useClientes } from '@/funcionalidades/clientes/hooks';
+import { usePlan } from '@/planes/usePlan';
+import { AvisoPlan } from '@/planes/AvisoPlan';
 import { SelectorClienteEstrategia, type SeleccionPublicacion } from '@/funcionalidades/calendario/SelectorClienteEstrategia';
 import {
   useGenerarEstrategiaMensual,
@@ -70,6 +72,7 @@ const BOTONES: { id: BotonIa; titulo: string; descripcion: string; icono: React.
 ];
 
 export function PaginaIaEstrategia() {
+  const { incluye } = usePlan();
   const { puedeEditar } = usePermisos();
   const { clienteActivoId } = useClienteActivo();
   const { data: clientes = [] } = useClientes();
@@ -144,6 +147,15 @@ export function PaginaIaEstrategia() {
     buyerPersonaMutation.error ??
     pilaresMutation.error ??
     oportunidadesMutation.error;
+
+  if (!incluye('ia-estrategica')) {
+    return (
+      <AvisoPlan
+        funcionalidad="ia-estrategica"
+        detalle="Generá análisis FODA, buyer personas, estrategias mensuales y detectá oportunidades de crecimiento con IA."
+      />
+    );
+  }
 
   // ── Vista resultado ──────────────────────────────────────────────────────────
   if (resultado) {

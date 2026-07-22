@@ -6,6 +6,8 @@ import { Tarjeta } from '@/componentes/ui/tarjeta';
 import { useClientes } from '@/funcionalidades/clientes/hooks';
 import { useClienteActivo } from '@/contexto/contexto-cliente-activo';
 import { usePermisos } from '@/permisos/usePermisos';
+import { usePlan } from '@/planes/usePlan';
+import { AvisoPlan } from '@/planes/AvisoPlan';
 import { TarjetaTarea } from './TarjetaTarea';
 import {
   useTablero,
@@ -36,6 +38,7 @@ const FORM_INICIAL = {
 
 /** Tablero de producción: tareas del equipo agrupadas por estado. */
 export function PaginaProduccion() {
+  const { incluye } = usePlan();
   const { puedeEditar } = usePermisos();
   const gestiona = puedeEditar('produccion');
   const { clienteActivoId } = useClienteActivo();
@@ -87,6 +90,15 @@ export function PaginaProduccion() {
         setCreando(false);
       },
     });
+  }
+
+  if (!incluye('produccion')) {
+    return (
+      <AvisoPlan
+        funcionalidad="produccion"
+        detalle="Gestioná el trabajo del equipo con un tablero Kanban de tareas por publicación."
+      />
+    );
   }
 
   return (

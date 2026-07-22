@@ -64,3 +64,27 @@ export function useDetalleMetricas(clienteId: string, filtros: FiltrosMetricas =
     enabled: !!clienteId,
   });
 }
+
+/** Un día de métricas de la cuenta de Instagram (ya vienen diarias de Meta). */
+export interface DiaCuenta {
+  fecha: string;
+  alcance: number;
+  vistas: number;
+  visitasPerfil: number;
+  seguidores: number;
+}
+
+/** Serie diaria de la cuenta (Instagram sí da historial acá, ~30 días). */
+export function useMetricasCuenta(clienteId: string, filtros: FiltrosMetricas = {}) {
+  const api = useApi();
+  return useQuery({
+    queryKey: ['metricas-cuenta', clienteId, filtros],
+    queryFn: () => {
+      const params = new URLSearchParams({ clienteId });
+      if (filtros.desde) params.set('desde', filtros.desde);
+      if (filtros.hasta) params.set('hasta', filtros.hasta);
+      return api.get<DiaCuenta[]>(`/metricas/cuenta?${params.toString()}`);
+    },
+    enabled: !!clienteId,
+  });
+}

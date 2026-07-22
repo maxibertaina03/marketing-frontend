@@ -1,24 +1,26 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useApi } from '@/contexto/contexto-organizacion';
 import type { ResumenMetricas } from './tipos';
 
-/** Resumen agregado de métricas de un cliente, para el dashboard. */
-export function useResumenMetricas(clienteId: string) {
-  const api = useApi();
-  return useQuery({
-    queryKey: ['metricas-resumen', clienteId],
-    queryFn: () => api.get<ResumenMetricas>(`/metricas/resumen?clienteId=${clienteId}`),
-    enabled: !!clienteId,
-  });
+/** Filtros del dashboard: rango de fechas y tipo de medio (publicaciones / reels). */
+export interface FiltrosMetricas {
+  desde?: string;
+  hasta?: string;
+  tipoMedio?: string;
 }
 
-/** Genera métricas de prueba para un cliente (mientras no está la ingesta de Meta). */
-export function useSimularMetricas() {
+/** Resumen agregado de métricas de un cliente, para el dashboard. */
+export function useResumenMetricas(clienteId: string, filtros: FiltrosMetricas = {}) {
   const api = useApi();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (clienteId: string) =>
-      api.post<{ generadas: number }>('/metricas/simular', { clienteId, dias: 14 }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['metricas-resumen'] }),
+  return useQuery({
+    queryKey: ['metricas-resumen', clienteId, filtros],
+    queryFn: () => {
+      const params = new URLSearchParams({ clienteId });
+      if (filtros.desde) params.set('desde', filtros.desde);
+      if (filtros.hasta) params.set('hasta', filtros.hasta);
+      if (filtros.tipoMedio) params.set('tipoMedio', filtros.tipoMedio);
+      return api.get<ResumenMetricas>(`/metricas/resumen?${params.toString()}`);
+    },
+    enabled: !!clienteId,
   });
 }

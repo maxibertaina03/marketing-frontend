@@ -22,10 +22,12 @@ import { PaginaBibliotecaCopys } from '@/funcionalidades/biblioteca-copys/Pagina
 import { PaginaConfiguracion } from '@/funcionalidades/configuracion/PaginaConfiguracion';
 import { PaginaIaContenido } from '@/funcionalidades/ia-contenido/PaginaIaContenido';
 import { PaginaPlanes } from '@/funcionalidades/planes/PaginaPlanes';
+import { PaginaPrecios } from '@/funcionalidades/ventas/PaginaPrecios';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <PaginaLogin /> },
   { path: '/registro', element: <PaginaRegistro /> },
+  { path: '/precios', element: <PaginaPrecios /> },
   {
     path: '/',
     element: <AreaPrivada />,

@@ -10,6 +10,9 @@ export interface OrganizacionDelUsuario {
   /** Plan efectivo: si la prueba venció, el backend ya devuelve STARTER. */
   plan: Plan;
   planExpiraEn: string | null;
+  /** Sin marcas: se puede abandonar o eliminar desde la app. */
+  vacia: boolean;
+  soyUnicoMiembro: boolean;
 }
 
 export interface ValorContextoOrganizacion {

@@ -2,7 +2,7 @@ import { NavLink, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { UserButton } from '@clerk/clerk-react';
 import { cn } from '@/lib/utils';
 import { useOrganizacion } from '@/contexto/contexto-organizacion';
-import { seccionesParaRol, rolPuedeVerRuta, rutaInicialPorRol } from './secciones';
+import { seccionesVisibles, rolPuedeVerRuta, rutaInicialPorRol } from './secciones';
 import { SelectorOrganizacion } from './SelectorOrganizacion';
 import { SelectorClienteActivo } from './SelectorClienteActivo';
 import { Campanita } from './Campanita';
@@ -12,9 +12,10 @@ export function Layout() {
   const { organizaciones, organizacionId } = useOrganizacion();
   const location = useLocation();
 
-  // Rol del usuario en la organización activa (undefined si todavía no cargó / sin organización).
-  const rol = organizaciones.find((o) => o.organizacionId === organizacionId)?.rol;
-  const secciones = seccionesParaRol(rol);
+  // Rol y plan del usuario en la organización activa (undefined si todavía no cargó).
+  const activa = organizaciones.find((o) => o.organizacionId === organizacionId);
+  const rol = activa?.rol;
+  const secciones = seccionesVisibles(rol, activa?.plan);
 
   // Si entra por URL a una ruta que su rol no puede ver, lo mandamos a su inicio.
   const bloqueado = !rolPuedeVerRuta(rol, location.pathname);

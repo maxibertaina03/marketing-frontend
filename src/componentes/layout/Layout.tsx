@@ -1,3 +1,4 @@
+import { ShieldAlert } from 'lucide-react';
 import { NavLink, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { UserButton } from '@clerk/clerk-react';
 import { cn } from '@/lib/utils';
@@ -6,6 +7,7 @@ import { seccionesVisibles, rolPuedeVerRuta, rutaInicialPorRol } from './seccion
 import { SelectorOrganizacion } from './SelectorOrganizacion';
 import { SelectorClienteActivo } from './SelectorClienteActivo';
 import { Campanita } from './Campanita';
+import { useEsSuperadmin } from '@/funcionalidades/admin/hooks';
 
 /** Layout principal de la app autenticada: sidebar (filtrado por rol) + contenido. */
 export function Layout() {
@@ -16,6 +18,7 @@ export function Layout() {
   const activa = organizaciones.find((o) => o.organizacionId === organizacionId);
   const rol = activa?.rol;
   const secciones = seccionesVisibles(rol, activa?.plan);
+  const { data: esSuperadmin } = useEsSuperadmin();
 
   // Si entra por URL a una ruta que su rol no puede ver, lo mandamos a su inicio.
   const bloqueado = !rolPuedeVerRuta(rol, location.pathname);
@@ -46,6 +49,22 @@ export function Layout() {
               </NavLink>
             );
           })}
+
+          {/* Portal de superadmin: fuera del menú común, solo si sos superadmin. */}
+          {esSuperadmin?.esSuperadmin && (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                cn(
+                  'mt-2 flex items-center gap-3 rounded-md border-t border-slate-100 px-3 pt-3 text-sm font-medium transition-colors',
+                  isActive ? 'text-marca' : 'text-slate-500 hover:text-slate-900',
+                )
+              }
+            >
+              <ShieldAlert className="h-4 w-4" />
+              Superadmin
+            </NavLink>
+          )}
         </nav>
       </aside>
 

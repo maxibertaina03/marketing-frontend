@@ -10,6 +10,8 @@ import {
 import { Boton } from '@/componentes/ui/boton';
 import { ROLES, ETIQUETA_ROL } from '@/funcionalidades/equipo/tipos';
 import { AREAS, ETIQUETA_AREA, EDICION } from '@/permisos/permisos';
+import { PanelConsumoIa } from './PanelConsumoIa';
+import { ZonaPeligro } from './ZonaPeligro';
 
 /** Centro de configuración: gestión del equipo y matriz de permisos por rol. */
 export function PaginaConfiguracion() {
@@ -19,6 +21,8 @@ export function PaginaConfiguracion() {
         <h1 className="text-2xl font-bold">Configuración</h1>
         <p className="text-slate-500">Roles, permisos y equipo de tu agencia.</p>
       </div>
+
+      <PanelConsumoIa />
 
       <Tarjeta className="p-6">
         <TarjetaCabecera className="p-0">
@@ -79,6 +83,8 @@ export function PaginaConfiguracion() {
           </p>
         </TarjetaContenido>
       </Tarjeta>
+
+      <ZonaPeligro />
     </div>
   );
 }

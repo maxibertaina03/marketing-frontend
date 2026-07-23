@@ -58,6 +58,7 @@ export interface CrearPublicacionPayload {
 }
 
 export function usePublicaciones(filtros: {
+  clienteId?: string;
   estrategiaId?: string;
   canal?: Canal;
   estado?: EstadoContenido;
@@ -66,6 +67,7 @@ export function usePublicaciones(filtros: {
 }) {
   const api = useApi();
   const params = new URLSearchParams();
+  if (filtros.clienteId) params.set('clienteId', filtros.clienteId);
   if (filtros.estrategiaId) params.set('estrategiaId', filtros.estrategiaId);
   if (filtros.canal) params.set('canal', filtros.canal);
   if (filtros.estado) params.set('estado', filtros.estado);

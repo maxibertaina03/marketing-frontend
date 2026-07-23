@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Megaphone, Sparkles, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
 import { Boton } from '@/componentes/ui/boton';
 import { useClienteActivo } from '@/contexto/contexto-cliente-activo';
+import { usePlan } from '@/planes/usePlan';
+import { AvisoPlan } from '@/planes/AvisoPlan';
 import {
   Tarjeta,
   TarjetaCabecera,
@@ -31,6 +33,7 @@ const CANALES: { valor: Canal; etiqueta: string }[] = [
 type Vista = 'menu' | 'nueva' | 'resultado' | 'biblioteca';
 
 export function PaginaIaCampanas() {
+  const { incluye } = usePlan();
   const [vista, setVista] = useState<Vista>('menu');
   const [seleccion, setSeleccion] = useState<SeleccionPublicacion | null>(null);
   const [nombre, setNombre] = useState('');
@@ -41,6 +44,15 @@ export function PaginaIaCampanas() {
   const [resultado, setResultado] = useState<RespuestaIa<SalidaCampana> | null>(null);
 
   const generarMutation = useGenerarCampana();
+
+  if (!incluye('campanias')) {
+    return (
+      <AvisoPlan
+        funcionalidad="campanias"
+        detalle="Planificá campañas completas con IA: cronograma, copys, hooks y creatividades."
+      />
+    );
+  }
 
   function toggleCanal(canal: Canal) {
     setCanales((prev) =>

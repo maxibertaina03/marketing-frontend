@@ -1,11 +1,18 @@
 import { createContext, useContext } from 'react';
 import type { ClienteApi } from '@/lib/clienteApi';
+import type { Plan } from '@/planes/planes';
 
 /** Una organización del usuario, tal como la devuelve GET /organizaciones/mias. */
 export interface OrganizacionDelUsuario {
   organizacionId: string;
   nombre: string;
   rol: string;
+  /** Plan efectivo: si la prueba venció, el backend ya devuelve STARTER. */
+  plan: Plan;
+  planExpiraEn: string | null;
+  /** Sin marcas: se puede abandonar o eliminar desde la app. */
+  vacia: boolean;
+  soyUnicoMiembro: boolean;
 }
 
 export interface ValorContextoOrganizacion {

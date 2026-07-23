@@ -10,6 +10,10 @@ import {
   TarjetaContenido,
 } from '@/componentes/ui/tarjeta';
 import { usePermisos } from '@/permisos/usePermisos';
+import { useClienteActivo } from '@/contexto/contexto-cliente-activo';
+import { useClientes } from '@/funcionalidades/clientes/hooks';
+import { usePlan } from '@/planes/usePlan';
+import { AvisoPlan } from '@/planes/AvisoPlan';
 import { SelectorClienteEstrategia, type SeleccionPublicacion } from '@/funcionalidades/calendario/SelectorClienteEstrategia';
 import {
   useGenerarEstrategiaMensual,
@@ -68,7 +72,10 @@ const BOTONES: { id: BotonIa; titulo: string; descripcion: string; icono: React.
 ];
 
 export function PaginaIaEstrategia() {
+  const { incluye } = usePlan();
   const { puedeEditar } = usePermisos();
+  const { clienteActivoId } = useClienteActivo();
+  const { data: clientes = [] } = useClientes();
   const [botonActivo, setBotonActivo] = useState<BotonIa | null>(null);
   const [seleccion, setSeleccion] = useState<SeleccionPublicacion | null>(null);
   const [cantidad, setCantidad] = useState(5);
@@ -90,6 +97,15 @@ export function PaginaIaEstrategia() {
     buyerPersonaMutation.isPending ||
     pilaresMutation.isPending ||
     oportunidadesMutation.isPending;
+
+  function activarBoton(id: BotonIa) {
+    setBotonActivo(id);
+    setResultado(null);
+    if (clienteActivoId) {
+      const cliente = clientes.find((c) => c.id === clienteActivoId);
+      if (cliente) setSeleccion({ clienteId: cliente.id, clienteNombre: cliente.nombre });
+    }
+  }
 
   function volver() {
     setBotonActivo(null);
@@ -131,6 +147,15 @@ export function PaginaIaEstrategia() {
     buyerPersonaMutation.error ??
     pilaresMutation.error ??
     oportunidadesMutation.error;
+
+  if (!incluye('ia-estrategica')) {
+    return (
+      <AvisoPlan
+        funcionalidad="ia-estrategica"
+        detalle="Generá análisis FODA, buyer personas, estrategias mensuales y detectá oportunidades de crecimiento con IA."
+      />
+    );
+  }
 
   // ── Vista resultado ──────────────────────────────────────────────────────────
   if (resultado) {
@@ -290,7 +315,7 @@ export function PaginaIaEstrategia() {
             <Tarjeta
               key={b.id}
               className={puedeIa ? 'cursor-pointer hover:border-marca/50 transition-colors group' : undefined}
-              onClick={puedeIa ? () => setBotonActivo(b.id) : undefined}
+              onClick={puedeIa ? () => activarBoton(b.id) : undefined}
             >
               <TarjetaCabecera>
                 <div className="flex items-center gap-3">

@@ -115,7 +115,7 @@ export function PaginaPrecios() {
                       <div className="pt-1">
                         {p === 'ENTERPRISE' ? (
                           <a
-                            href="mailto:hola@contentos.app"
+                            href="mailto:oscontent029@gmail.com"
                             className="inline-block rounded-lg border border-marca px-4 py-1.5 text-sm font-medium text-marca hover:bg-marca hover:text-white transition-colors"
                           >
                             Contactanos
@@ -162,7 +162,7 @@ export function PaginaPrecios() {
         {/* Footer note */}
         <p className="mt-8 text-center text-sm text-slate-400">
           ¿Tenés preguntas?{' '}
-          <a href="mailto:hola@contentos.app" className="text-marca hover:underline">
+          <a href="mailto:oscontent029@gmail.com" className="text-marca hover:underline">
             Escribinos
           </a>{' '}
           — respondemos el mismo día.

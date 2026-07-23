@@ -7,6 +7,7 @@ import { Tarjeta } from '@/componentes/ui/tarjeta';
 import { useClientes } from '@/funcionalidades/clientes/hooks';
 import { useClienteActivo } from '@/contexto/contexto-cliente-activo';
 import { usePermisos } from '@/permisos/usePermisos';
+import { ErrorGeneracionIa } from '@/planes/ErrorGeneracionIa';
 import { SalidaContenido } from '@/funcionalidades/biblioteca-copys/SalidaContenido';
 import {
   useGenerarIdeas,
@@ -214,9 +215,10 @@ export function PaginaIaContenido() {
               <p className="mt-2 text-xs text-slate-400">Elegí una marca para poder generar.</p>
             )}
             {actual.isError && (
-              <p className="mt-2 text-sm text-red-600">
-                No se pudo generar. Revisá que la marca tenga su estrategia cargada.
-              </p>
+              <ErrorGeneracionIa
+                error={actual.error}
+                fallback="No se pudo generar. Revisá que la marca tenga su estrategia cargada."
+              />
             )}
           </div>
         </form>

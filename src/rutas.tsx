@@ -21,6 +21,7 @@ import { PaginaInformes } from '@/funcionalidades/informes/PaginaInformes';
 import { PaginaBibliotecaCopys } from '@/funcionalidades/biblioteca-copys/PaginaBibliotecaCopys';
 import { PaginaConfiguracion } from '@/funcionalidades/configuracion/PaginaConfiguracion';
 import { PaginaIaContenido } from '@/funcionalidades/ia-contenido/PaginaIaContenido';
+import { PaginaPlanes } from '@/funcionalidades/planes/PaginaPlanes';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <PaginaLogin /> },
@@ -49,6 +50,7 @@ export const router = createBrowserRouter([
       { path: 'informes', element: <PaginaInformes /> },
       { path: 'equipo', element: <PaginaEquipo /> },
       { path: 'configuracion', element: <PaginaConfiguracion /> },
+      { path: 'planes', element: <PaginaPlanes /> },
     ],
   },
   { path: '*', element: <Navigate to="/panel" replace /> },

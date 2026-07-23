@@ -11,6 +11,7 @@ import { Boton } from '@/componentes/ui/boton';
 import { ROLES, ETIQUETA_ROL } from '@/funcionalidades/equipo/tipos';
 import { AREAS, ETIQUETA_AREA, EDICION } from '@/permisos/permisos';
 import { PanelConsumoIa } from './PanelConsumoIa';
+import { ZonaPeligro } from './ZonaPeligro';
 
 /** Centro de configuración: gestión del equipo y matriz de permisos por rol. */
 export function PaginaConfiguracion() {
@@ -82,6 +83,8 @@ export function PaginaConfiguracion() {
           </p>
         </TarjetaContenido>
       </Tarjeta>
+
+      <ZonaPeligro />
     </div>
   );
 }

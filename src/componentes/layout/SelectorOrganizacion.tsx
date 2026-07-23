@@ -1,4 +1,5 @@
 import { useOrganizacion } from '@/contexto/contexto-organizacion';
+import { CrearOtraAgencia } from './CrearOtraAgencia';
 
 /** Selector de la organización activa (desplegable en la barra superior). */
 export function SelectorOrganizacion() {
@@ -13,16 +14,19 @@ export function SelectorOrganizacion() {
   }
 
   return (
-    <select
-      className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm"
-      value={organizacionId ?? ''}
-      onChange={(e) => seleccionar(e.target.value)}
-    >
-      {organizaciones.map((org) => (
-        <option key={org.organizacionId} value={org.organizacionId}>
-          {org.nombre} ({org.rol})
-        </option>
-      ))}
-    </select>
+    <div className="flex items-center gap-1.5">
+      <select
+        className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm"
+        value={organizacionId ?? ''}
+        onChange={(e) => seleccionar(e.target.value)}
+      >
+        {organizaciones.map((org) => (
+          <option key={org.organizacionId} value={org.organizacionId}>
+            {org.nombre} ({org.rol})
+          </option>
+        ))}
+      </select>
+      <CrearOtraAgencia />
+    </div>
   );
 }

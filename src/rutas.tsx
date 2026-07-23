@@ -23,6 +23,7 @@ import { PaginaConfiguracion } from '@/funcionalidades/configuracion/PaginaConfi
 import { PaginaIaContenido } from '@/funcionalidades/ia-contenido/PaginaIaContenido';
 import { PaginaPlanes } from '@/funcionalidades/planes/PaginaPlanes';
 import { PaginaPrecios } from '@/funcionalidades/ventas/PaginaPrecios';
+import { PaginaAdmin } from '@/funcionalidades/admin/PaginaAdmin';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <PaginaLogin /> },
@@ -53,6 +54,7 @@ export const router = createBrowserRouter([
       { path: 'equipo', element: <PaginaEquipo /> },
       { path: 'configuracion', element: <PaginaConfiguracion /> },
       { path: 'planes', element: <PaginaPlanes /> },
+      { path: 'admin', element: <PaginaAdmin /> },
     ],
   },
   { path: '*', element: <Navigate to="/panel" replace /> },

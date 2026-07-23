@@ -19,6 +19,7 @@ import {
   CreditCard,
   type LucideIcon,
 } from 'lucide-react';
+import { planIncluye, type FuncionalidadPlan, type Plan } from '@/planes/planes';
 
 /** Roles posibles (debe coincidir con el enum Rol del backend). */
 export type Rol =
@@ -41,6 +42,12 @@ export interface SeccionMenu {
   disponible: boolean;
   /** Roles que pueden ver/usar esta sección. */
   roles: Rol[];
+  /**
+   * Funcionalidad de plan que esta sección requiere. Si el plan de la agencia no
+   * la incluye, la sección no aparece en el menú (la ruta directa sigue mostrando
+   * el `AvisoPlan`). Sin este campo, la sección está en todos los planes.
+   */
+  funcionalidad?: FuncionalidadPlan;
 }
 
 /**
@@ -53,7 +60,7 @@ export const SECCIONES: SeccionMenu[] = [
   { ruta: '/clientes', etiqueta: 'Clientes', icono: Users, disponible: true, roles: INTERNOS },
   { ruta: '/estrategia', etiqueta: 'Estrategia de marca', icono: Target, disponible: true, roles: INTERNOS },
   { ruta: '/calendario', etiqueta: 'Calendario', icono: CalendarDays, disponible: true, roles: INTERNOS },
-  { ruta: '/ia', etiqueta: 'IA Estratégica', icono: Sparkles, disponible: true, roles: GESTORES },
+  { ruta: '/ia', etiqueta: 'IA Estratégica', icono: Sparkles, disponible: true, roles: GESTORES, funcionalidad: 'ia-estrategica' },
   {
     ruta: '/ia-contenido',
     etiqueta: 'IA de Contenido',
@@ -63,14 +70,14 @@ export const SECCIONES: SeccionMenu[] = [
   },
   { ruta: '/ideas', etiqueta: 'Banco de ideas', icono: Lightbulb, disponible: true, roles: INTERNOS },
   { ruta: '/biblioteca-copys', etiqueta: 'Biblioteca de copys', icono: FileText, disponible: true, roles: INTERNOS },
-  { ruta: '/campanias', etiqueta: 'Campañas', icono: Megaphone, disponible: true, roles: GESTORES },
-  { ruta: '/produccion', etiqueta: 'Producción', icono: ClipboardList, disponible: true, roles: ['ADMIN', 'COMMUNITY_MANAGER', 'DISENADOR', 'COPYWRITER'] },
+  { ruta: '/campanias', etiqueta: 'Campañas', icono: Megaphone, disponible: true, roles: GESTORES, funcionalidad: 'campanias' },
+  { ruta: '/produccion', etiqueta: 'Producción', icono: ClipboardList, disponible: true, roles: ['ADMIN', 'COMMUNITY_MANAGER', 'DISENADOR', 'COPYWRITER'], funcionalidad: 'produccion' },
   { ruta: '/aprobaciones', etiqueta: 'Aprobaciones', icono: CheckCircle2, disponible: true, roles: GESTORES },
   { ruta: '/archivos', etiqueta: 'Archivos', icono: FolderOpen, disponible: true, roles: ['ADMIN', 'COMMUNITY_MANAGER', 'DISENADOR'] },
   { ruta: '/portal-cliente', etiqueta: 'Portal del cliente', icono: Store, disponible: true, roles: ['CLIENTE'] },
   { ruta: '/metricas', etiqueta: 'Métricas', icono: BarChart3, disponible: true, roles: ANALITICA },
   { ruta: '/ia-metricas', etiqueta: 'IA de Métricas', icono: BrainCircuit, disponible: true, roles: ANALITICA },
-  { ruta: '/informes', etiqueta: 'Informes', icono: FileText, disponible: true, roles: ANALITICA },
+  { ruta: '/informes', etiqueta: 'Informes', icono: FileText, disponible: true, roles: ANALITICA, funcionalidad: 'informes' },
   { ruta: '/equipo', etiqueta: 'Equipo', icono: UserCog, disponible: true, roles: INTERNOS },
   { ruta: '/configuracion', etiqueta: 'Configuración', icono: Settings, disponible: true, roles: GESTORES },
   { ruta: '/planes', etiqueta: 'Planes', icono: CreditCard, disponible: true, roles: ['ADMIN'] },
@@ -80,6 +87,16 @@ export const SECCIONES: SeccionMenu[] = [
 export function seccionesParaRol(rol?: string): SeccionMenu[] {
   if (!rol) return [];
   return SECCIONES.filter((s) => s.roles.includes(rol as Rol));
+}
+
+/**
+ * Secciones visibles para un rol **y** un plan: además del rol, oculta las
+ * secciones cuya funcionalidad el plan no incluye. Es lo que usa el sidebar.
+ */
+export function seccionesVisibles(rol?: string, plan?: Plan): SeccionMenu[] {
+  return seccionesParaRol(rol).filter(
+    (s) => !s.funcionalidad || planIncluye(plan, s.funcionalidad),
+  );
 }
 
 /** Ruta de inicio según el rol: el cliente arranca en su portal, el resto en el panel. */

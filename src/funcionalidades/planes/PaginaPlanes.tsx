@@ -1,8 +1,12 @@
-import { Check, Minus } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Check, Minus, CheckCircle2 } from 'lucide-react';
 import { Tarjeta, TarjetaContenido } from '@/componentes/ui/tarjeta';
+import { Boton } from '@/componentes/ui/boton';
 import { usePlan } from '@/planes/usePlan';
+import { useRolActual } from '@/permisos/usePermisos';
 import { PLANES, type Plan } from '@/planes/planes';
 import { cn } from '@/lib/utils';
+import { useIniciarPago } from './hooks';
 
 /** Planes que se ofrecen en la grilla (PRUEBA no se vende: se otorga). */
 const OFRECIDOS: Plan[] = ['STARTER', 'AGENCY', 'AGENCY_PRO', 'ENTERPRISE'];
@@ -88,6 +92,9 @@ function Celda({ valor }: { valor: boolean | string }) {
 
 export function PaginaPlanes() {
   const { plan, planExpiraEn } = usePlan();
+  const esAdmin = useRolActual() === 'ADMIN';
+  const [params] = useSearchParams();
+  const volvioDePago = params.get('pago') === 'listo';
 
   const diasDePrueba =
     plan === 'PRUEBA' && planExpiraEn
@@ -99,6 +106,15 @@ export function PaginaPlanes() {
 
   return (
     <div className="space-y-6">
+      {volvioDePago && (
+        <div className="flex items-start gap-2 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <span>
+            ¡Gracias! Estamos confirmando tu pago con Mercado Pago. En cuanto se acredite, tu plan se
+            actualiza acá solo —puede tardar unos minutos—.
+          </span>
+        </div>
+      )}
       <div>
         <h1 className="text-2xl font-semibold text-slate-900">Planes</h1>
         <p className="text-sm text-slate-600">
@@ -170,14 +186,70 @@ export function PaginaPlanes() {
                   ))}
                 </tr>
               ))}
+              <tr>
+                <th scope="row" className="p-4">&nbsp;</th>
+                {OFRECIDOS.map((p) => (
+                  <td
+                    key={p}
+                    className={cn(
+                      'p-4 align-top',
+                      p === plan && 'bg-marca/5',
+                      p === 'AGENCY' && 'border-x border-marca/30',
+                    )}
+                  >
+                    <BotonPlan plan={p} planActual={plan} esAdmin={esAdmin} />
+                  </td>
+                ))}
+              </tr>
             </tbody>
           </table>
         </TarjetaContenido>
       </Tarjeta>
 
-      <p className="text-center text-sm text-slate-500">
-        Para cambiar de plan, escribinos. El pago con tarjeta llega en la próxima versión.
-      </p>
+      {!esAdmin && (
+        <p className="text-center text-sm text-slate-500">
+          Solo el administrador de la agencia puede cambiar de plan.
+        </p>
+      )}
     </div>
+  );
+}
+
+/** Botón de acción de cada plan en la grilla: contratar, plan actual, o contacto. */
+function BotonPlan({
+  plan,
+  planActual,
+  esAdmin,
+}: {
+  plan: Plan;
+  planActual: Plan | undefined;
+  esAdmin: boolean;
+}) {
+  const iniciarPago = useIniciarPago();
+
+  if (plan === planActual) {
+    return <span className="block text-center text-xs font-medium text-marca">Plan actual</span>;
+  }
+  if (plan === 'ENTERPRISE') {
+    return (
+      <a
+        href="mailto:oscontent029@gmail.com"
+        className="block rounded-md border border-slate-300 px-3 py-1.5 text-center text-sm text-slate-700 hover:bg-slate-50"
+      >
+        Contactar
+      </a>
+    );
+  }
+  if (!esAdmin) return null;
+
+  return (
+    <Boton
+      tamano="sm"
+      className="w-full"
+      disabled={iniciarPago.isPending}
+      onClick={() => iniciarPago.mutate(plan)}
+    >
+      {iniciarPago.isPending ? 'Abriendo…' : 'Contratar'}
+    </Boton>
   );
 }
